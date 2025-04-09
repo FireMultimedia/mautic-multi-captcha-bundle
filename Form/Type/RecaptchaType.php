@@ -1,80 +1,76 @@
-<?php
+<?php declare(strict_types=1);
 
-/*
- * @copyright   2018 Konstantin Scheumann. All rights reserved
- * @author      Konstantin Scheumann
- * @license     GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
- */
+namespace MauticPlugin\MauticMultiCaptchaBundle\Form\Type;
 
-namespace MauticPlugin\MauticRecaptchaBundle\Form\Type;
-
-use Mautic\CoreBundle\Form\Type\FormButtonsType;
-use Mautic\CoreBundle\Form\Type\YesNoButtonGroupType;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\NumberType;
+
 use Symfony\Component\Form\FormBuilderInterface;
 
+use Symfony\Component\Form\Extension\Core\Type\NumberType;
+
+use Mautic\CoreBundle\Form\Type\YesNoButtonGroupType;
+use Mautic\CoreBundle\Form\Type\FormButtonsType;
+
+use MauticPlugin\MauticMultiCaptchaBundle\Integration\RecaptchaIntegration;
+
 /**
- * Class RecaptchaType.
+ * <h1>Class RecaptchaType</h1>
+ *
+ * @package MauticPlugin\MauticMultiCaptchaBundle\Form\Type
+ *
+ * @authors see: composer.json
+ * @license GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
  */
-class RecaptchaType extends AbstractType
-{
-    /**
-     * @param FormBuilderInterface $builder
-     * @param array                $options
-     */
-    public function buildForm(FormBuilderInterface $builder, array $options)
-    {
+class RecaptchaType extends AbstractType {
 
-        $builder->add(
-            'scoreValidation',
-            YesNoButtonGroupType::class,
-            [
-                'label'      => 'mautic.recaptcha.score.validation',
-                'label_attr' => ['class' => 'control-label'],
-                'attr'       => [
-                    'tooltip' => 'mautic.recaptcha.min.score.tooltip',
-                ],
-                'data'       => isset($options['data']['scoreValidation']) ? $options['data']['scoreValidation'] : false,
+    /** {@inheritDoc} */
+    public function buildForm(FormBuilderInterface $builder, array $options) {
+        $builder->add("scoreValidation", YesNoButtonGroupType::class, [
+            "label" => "mautic.recaptcha.score.validation",
+            "data"  => $options["data"]["scoreValidation"] ?? false,
+
+            "label_attr" => [
+                "class" => "control-label"
+            ],
+
+            "attr" => [
+                "tooltip" => "mautic.recaptcha.min.score.tooltip",
             ]
-        );
-        $builder->add(
-            'minScore',
-            NumberType::class,
-            [
-                'label'      => 'mautic.recaptcha.min.score',
-                'label_attr' => ['class' => 'control-label'],
-                'attr' => [
-                    'class' => 'form-control',
-                    'data-show-on' => '{"formfield_properties_scoreValidation_1":"checked"}'
+        ]);
+
+        $builder->add("minScore", NumberType::class, [
+                "label" => "mautic.recaptcha.min.score",
+                "data"  => isset($options["data"]["minScore"]) ? (float) $options["data"]["minScore"] : 0.8,
+
+                "label_attr" => [
+                    "class" => "control-label"
                 ],
-                'data'       => isset($options['data']['minScore']) ? (float)$options['data']['minScore'] : 0.8,
+
+                "attr" => [
+                    "class"        => "form-control",
+                    "data-show-on" => '{"formfield_properties_scoreValidation_1":"checked"}'
+                ]
             ]
         );
 
-        $builder->add(
-            'buttons',
-            FormButtonsType::class,
-            [
-                'apply_text'     => false,
-                'save_text'      => 'mautic.core.form.submit',
-                'cancel_onclick' => 'javascript:void(0);',
-                'cancel_attr'    => [
-                    'data-dismiss' => 'modal',
-                ],
+        $builder->add("buttons", FormButtonsType::class, [
+                "apply_text"     => false,
+                "save_text"      => "mautic.core.form.submit",
+                "cancel_onclick" => "javascript:void(0);",
+
+                "cancel_attr" => [
+                    "data-dismiss" => "modal",
+                ]
             ]
         );
 
-        if (!empty($options['action'])) {
-            $builder->setAction($options['action']);
-        }
+        if(!empty($options["action"]))
+            $builder->setAction($options["action"]);
     }
 
-    /**
-     * @return string
-     */
-    public function getBlockPrefix()
-    {
-        return 'recaptcha';
+    /** {@inheritDoc} */
+    public function getBlockPrefix() {
+        return RecaptchaIntegration::INTEGRATION_NAME;
     }
+
 }

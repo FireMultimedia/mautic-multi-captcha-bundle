@@ -1,74 +1,68 @@
-<?php
+<?php declare(strict_types=1);
 
-/*
- * @copyright   2018 Konstantin Scheumann. All rights reserved
- * @author      Konstantin Scheumann
- * @license     GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
- */
-
-namespace MauticPlugin\MauticRecaptchaBundle\Integration;
+namespace MauticPlugin\MauticMultiCaptchaBundle\Integration;
 
 use Mautic\PluginBundle\Integration\AbstractIntegration;
+
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
-use Symfony\Component\Form\Form;
-use Symfony\Component\Form\FormBuilder;
 
 /**
- * Class RecaptchaIntegration.
+ * <h1>Class RecaptchaIntegration</h1>
+ *
+ * @package MauticPlugin\MauticMultiCaptchaBundle\Integration
+ *
+ * @authors see: composer.json
+ * @license GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
  */
-class RecaptchaIntegration extends AbstractIntegration
-{
-    const INTEGRATION_NAME = 'Recaptcha';
+class RecaptchaIntegration extends AbstractIntegration {
 
-    public function getName()
-    {
+    public const INTEGRATION_NAME = "Recaptcha";
+
+    /** {@inheritDoc} */
+    public function getName() {
         return self::INTEGRATION_NAME;
     }
 
-    public function getDisplayName()
-    {
-        return 'reCAPTCHA';
+    /** {@inheritDoc} */
+    public function getDisplayName() {
+        return "Google reCAPTCHA";
     }
 
-    public function getAuthenticationType()
-    {
-        return 'none';
+    /** {@inheritDoc} */
+    public function getAuthenticationType() {
+        return "none";
     }
 
-    public function getRequiredKeyFields()
-    {
+    /** {@inheritDoc} */
+    public function getRequiredKeyFields() {
         return [
-            'site_key'   => 'mautic.integration.recaptcha.site_key',
-            'secret_key' => 'mautic.integration.recaptcha.secret_key',
+            "site_key"   => "mautic.integration.recaptcha.site_key",
+            "secret_key" => "mautic.integration.recaptcha.secret_key",
         ];
     }
 
-    /**
-     * @param FormBuilder|Form $builder
-     * @param array            $data
-     * @param string           $formArea
-     */
-    public function appendToForm(&$builder, $data, $formArea)
-    {
-        if ($formArea === 'keys') {
-            $builder->add(
-                'version',
-                ChoiceType::class,
-                [
-                    'choices' => [
-                        'mautic.recaptcha.v2' => 'v2',
-                        'mautic.recaptcha.v3' => 'v3',
-                    ],
-                    'label'      => 'mautic.recaptcha.version',
-                    'label_attr' => ['class' => 'control-label'],
-                    'attr'       => [
-                        'class'    => 'form-control',
-                    ],
-                    'required'    => false,
-                    'placeholder' => false,
-                    'data'=> isset($data['version']) ? $data['version'] : 'v2'
+    /** {@inheritDoc} */
+    public function appendToForm(&$builder, $data, $formArea): void {
+        if($formArea === "keys")
+            $builder->add("version", ChoiceType::class, [
+                "label"       => "mautic.recaptcha.version",
+                "required"    => false,
+                "placeholder" => false,
+                "data"        => $data["version"] ?? "v2",
+
+                "choices" => [
+                    "mautic.recaptcha.v2" => "v2",
+                    "mautic.recaptcha.v3" => "v3",
+                ],
+
+                "label_attr" => [
+                    "class" => "control-label"
+                ],
+
+                "attr" => [
+                    "class" => "form-control"
                 ]
-            );
-        }
+            ]);
     }
+
 }

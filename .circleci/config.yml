@@ -3,18 +3,18 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/php:7.4-cli
+      - image: circleci/php:8.2-cli
     working_directory: ~/mautic
     steps:
       - run: sudo apt-get update -y && sudo apt install -y libsqlite3-dev zlib1g-dev
       - run: sudo composer self-update
-      - run: wget --output-document=mautic.tar.gz https://github.com/mautic/mautic/archive/refs/tags/4.0.1.tar.gz && tar -xzf mautic.tar.gz --strip 1
+      - run: wget --output-document=mautic.tar.gz https://github.com/mautic/mautic/archive/refs/tags/6.0.0.tar.gz && tar -xzf mautic.tar.gz --strip 1
       - checkout:
           path:
-            ~/mautic/plugins/MauticRecaptchaBundle
+            ~/mautic/plugins/MauticMultiCaptchaBundle
       - run: composer install --no-scripts --ignore-platform-reqs
       - run: |
           mkdir -p ~/test-results
-          bin/phpunit --log-junit ~/test-results/phpunit/junit.xml --bootstrap vendor/autoload.php --configuration app/phpunit.xml.dist --filter MauticRecaptchaBundle
+          bin/phpunit --log-junit ~/test-results/phpunit/junit.xml --bootstrap vendor/autoload.php --configuration app/phpunit.xml.dist --filter MauticMultiCaptchaBundle
       - store_test_results:
           path: ~/test-results

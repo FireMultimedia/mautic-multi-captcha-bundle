@@ -1,70 +1,74 @@
-<?php
+<?php declare(strict_types=1);
 
-/*
- * @copyright   2018 Konstantin Scheumann. All rights reserved
- * @author      Konstantin Scheumann
- * @license     GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
- */
+use MauticPlugin\MauticMultiCaptchaBundle\EventListener\RecaptchaFormSubscriber;
+use MauticPlugin\MauticMultiCaptchaBundle\Service\RecaptchaClient;
+use MauticPlugin\MauticMultiCaptchaBundle\Integration\RecaptchaIntegration;
 
 return [
-    'name'        => 'reCAPTCHA',
-    'description' => 'Enables reCAPTCHA integration.',
-    'version'     => '1.0',
-    'author'      => 'Konstantin Scheumann',
+    "name"        => "MultiCAPTCHA",
+    "description" => "Enables Google's reCAPTCHA, hCaptcha, and Cloudflare Turnstile integration for Mautic",
+    "version"     => "1.0.0",
+    "author"      => "FireMultimedia B.V.",
 
-    'routes' => [
-
-    ],
-
-    'services' => [
-        'events' => [
-            'mautic.recaptcha.event_listener.form_subscriber' => [
-                'class'     => \MauticPlugin\MauticRecaptchaBundle\EventListener\FormSubscriber::class,
-                'arguments' => [
-                    'event_dispatcher',
-                    'mautic.helper.integration',
-                    'mautic.recaptcha.service.recaptcha_client',
-                    'mautic.lead.model.lead',
-                    'translator'
-                ],
-            ],
-        ],
-        'models' => [
-
-        ],
-        'others'=>[
-            'mautic.recaptcha.service.recaptcha_client' => [
-                'class'     => \MauticPlugin\MauticRecaptchaBundle\Service\RecaptchaClient::class,
-                'arguments' => [
-                    'mautic.helper.integration',
-                ],
-            ],
-        ],
-        'integrations' => [
-            'mautic.integration.recaptcha' => [
-                'class'     => \MauticPlugin\MauticRecaptchaBundle\Integration\RecaptchaIntegration::class,
-                'arguments' => [
-                    'event_dispatcher',
-                    'mautic.helper.cache_storage',
-                    'doctrine.orm.entity_manager',
-                    'session',
-                    'request_stack',
-                    'router',
-                    'translator',
-                    'logger',
-                    'mautic.helper.encryption',
-                    'mautic.lead.model.lead',
-                    'mautic.lead.model.company',
-                    'mautic.helper.paths',
-                    'mautic.core.model.notification',
-                    'mautic.lead.model.field',
-                    'mautic.plugin.model.integration_entity',
-                    'mautic.lead.model.dnc',
-                ],
-            ],
-        ],
-    ],
-    'parameters' => [
+    "routes" => [
 
     ],
+
+    "services" => [
+        "events" => [
+            "mautic.recaptcha.event_listener.form_subscriber" => [
+                "class" => RecaptchaFormSubscriber::class,
+
+                "arguments" => [
+                    "event_dispatcher",
+                    "mautic.helper.integration",
+                    "mautic.recaptcha.service.recaptcha_client",
+                    "mautic.lead.model.lead"
+                ]
+            ]
+        ],
+
+        "models" => [
+
+        ],
+
+        "others" => [
+            "mautic.recaptcha.service.recaptcha_client" => [
+                "class" => RecaptchaClient::class,
+
+                "arguments" => [
+                    "mautic.helper.integration"
+                ]
+            ]
+        ],
+
+        "integrations" => [
+            "mautic.integration.recaptcha" => [
+                "class" => RecaptchaIntegration::class,
+
+                "arguments" => [
+                    "event_dispatcher",
+                    "mautic.helper.cache_storage",
+                    "doctrine.orm.entity_manager",
+                    "request_stack",
+                    "router",
+                    "translator",
+                    "monolog.logger.mautic",
+                    "mautic.helper.encryption",
+                    "mautic.lead.model.lead",
+                    "mautic.lead.model.company",
+                    "mautic.helper.paths",
+                    "mautic.core.model.notification",
+                    "mautic.lead.model.field",
+                    "mautic.plugin.model.integration_entity",
+                    "mautic.lead.model.dnc",
+                    "mautic.lead.field.fields_with_unique_identifier"
+                ]
+            ]
+        ]
+    ],
+
+    "parameters" => [
+
+    ]
 ];

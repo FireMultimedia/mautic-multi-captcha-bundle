@@ -1,12 +1,19 @@
 {
-    "name": "texthelp/mautic-recaptcha-bundle",
-    "description": "This plugin brings reCAPTCHA integration to mautic.",
+    "name": "firemultimedia/mautic-multi-captcha-bundle",
+    "description": "This plugin brings Google's reCAPTCHA, hCaptcha, and Cloudflare Turnstile integration to mautic.",
     "type": "mautic-plugin",
     "license": "GPL-3.0-only",
-    "authors": [
-        {
-            "name": "Konstantin Scheumann",
-            "email": "info@konstantin.codes"
-        }
-    ]
+    "authors": [{
+        "name": "Konstantin Scheumann",
+        "email": "info@konstantin.codes"
+    }, {
+        "name": "FireMultimedia B.V.",
+        "email": "support@firemultimedia.nl"
+    }],
+    "require": {
+        "mautic/core-lib": "^6.0"
+    },
+    "extra": {
+        "install-directory-name": "MauticMultiCaptchaBundle"
+    }
 }

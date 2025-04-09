@@ -1,0 +1,16 @@
+<?php declare(strict_types=1);
+
+namespace MauticPlugin\MauticMultiCaptchaBundle;
+
+/**
+ * <h1>Class CaptchaEvents</h1>
+ *
+ * @package MauticPlugin\MauticMultiCaptchaBundle
+ *
+ * @authors see: composer.json
+ * @license GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
+ * /
+ */
+final class CaptchaEvents {
+    public const ON_FORM_VALIDATE = "mautic.plugin.captcha.on_form_validate";
+}
