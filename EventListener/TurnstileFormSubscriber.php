@@ -103,7 +103,7 @@ class TurnstileFormSubscriber implements EventSubscriberInterface {
 
             "stringBag" => [
                 "accept_cookies"              => $this->translator->trans("strings.turnstile.accept_cookies"),
-                "accept_cookies.notice"       => $this->translator->trans("strings.turnstile.accept_cookies.notice"),
+                "accept_cookies.notice"       => $this->translator->trans("strings.accept_cookies.notice"),
                 "accept_cookies.notice.value" => $this->translator->trans("strings.turnstile.accept_cookies.notice.value")
             ],
 

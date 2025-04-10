@@ -6,10 +6,9 @@ use Symfony\Component\Form\AbstractType;
 
 use Symfony\Component\Form\FormBuilderInterface;
 
-use Symfony\Component\Form\Extension\Core\Type\NumberType;
-
 use Mautic\CoreBundle\Form\Type\YesNoButtonGroupType;
-use Mautic\CoreBundle\Form\Type\FormButtonsType;
+
+use Symfony\Component\Form\Extension\Core\Type\NumberType;
 
 use MauticPlugin\MauticMultiCaptchaBundle\Integration\RecaptchaIntegration;
 
@@ -25,7 +24,23 @@ class RecaptchaType extends AbstractType {
 
     /** {@inheritDoc} */
     public function buildForm(FormBuilderInterface $builder, array $options) {
-        $builder->add("scoreValidation", YesNoButtonGroupType::class, [
+        $builder->add("explicitConsent", YesNoButtonGroupType::class, [
+            "label" => "strings.settings.explicit_consent",
+            "data"  => $options["data"]["explicitConsent"] ?? true,
+
+            "label_attr" => [
+                "class" => "control-label"
+            ],
+
+            "attr" => [
+                "tooltip" => "strings.settings.explicit_consent.tooltip"
+            ]
+        ])->add("spacer", YesNoButtonGroupType::class, [
+            "attr" => [
+                "class"        => "form-control",
+                "data-show-on" => '{"formfield_properties_spacer_1":"checked"}'
+            ]
+        ])->add("scoreValidation", YesNoButtonGroupType::class, [
             "label" => "strings.recaptcha.settings.score_validation",
             "data"  => $options["data"]["scoreValidation"] ?? true,
 

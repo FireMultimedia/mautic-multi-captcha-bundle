@@ -107,7 +107,7 @@ class RecaptchaFormSubscriber implements EventSubscriberInterface {
 
             "stringBag" => [
                 "accept_cookies"              => $this->translator->trans("strings.recaptcha.accept_cookies"),
-                "accept_cookies.notice"       => $this->translator->trans("strings.recaptcha.accept_cookies.notice"),
+                "accept_cookies.notice"       => $this->translator->trans("strings.accept_cookies.notice"),
                 "accept_cookies.notice.value" => $this->translator->trans("strings.recaptcha.accept_cookies.notice.value")
             ],
 

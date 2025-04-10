@@ -6,6 +6,8 @@ use Symfony\Component\Form\AbstractType;
 
 use Symfony\Component\Form\FormBuilderInterface;
 
+use Mautic\CoreBundle\Form\Type\YesNoButtonGroupType;
+
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 
 use MauticPlugin\MauticMultiCaptchaBundle\Integration\TurnstileIntegration;
@@ -22,7 +24,23 @@ class TurnstileType extends AbstractType {
 
     /** {@inheritDoc} */
     public function buildForm(FormBuilderInterface $builder, array $options) {
-        $builder->add("size", ChoiceType::class, [
+        $builder->add("explicitConsent", YesNoButtonGroupType::class, [
+            "label" => "strings.settings.explicit_consent",
+            "data"  => $options["data"]["explicitConsent"] ?? true,
+
+            "label_attr" => [
+                "class" => "control-label"
+            ],
+
+            "attr" => [
+                "tooltip" => "strings.settings.explicit_consent.tooltip"
+            ]
+        ])->add("spacer", YesNoButtonGroupType::class, [
+            "attr" => [
+                "class"        => "form-control",
+                "data-show-on" => '{"formfield_properties_spacer_1":"checked"}'
+            ]
+        ])->add("size", ChoiceType::class, [
             "label"    => "strings.turnstile.settings.size",
             "required" => false,
             "data"     => $options["data"]["size"] ?? "normal",

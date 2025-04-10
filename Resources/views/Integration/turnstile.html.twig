@@ -169,44 +169,56 @@ Varables
                 }
             });
         }
-
-        function acceptCookieNotice(checkbox) {
-            if(!checkbox.checked)
-                return
-
-            checkbox.disabled = true;
-
-            const captchaProviderElement = document.getElementById("provider");
-
-            if(!captchaProviderElement)
-                return;
-
-            const cloudflareTurnstile = document.createElement("script");
-
-            cloudflareTurnstile.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=onloadTurnstileCallback"
-
-            captchaProviderElement.innerHTML = "";
-
-            captchaProviderElement.appendChild(cloudflareTurnstile);
-        }
     </script>
 
-    <div style="display:flex">
-        <input id="turnstileCheck"
-               name="turnstileCheck"
-               type="checkbox"
-               style="margin-right:1rem"
-               onchange="acceptCookieNotice(this);" />
+    {% if field.properties.explicitConsent %}
+        <script type="text/javascript">
+            function acceptCookieNotice(checkbox) {
+                if(!checkbox.checked)
+                    return
 
-        <label for="turnstileCheck">
-            {{ field.customParameters.stringBag["accept_cookies"] }}<br />
-            <strong>{{ field.customParameters.stringBag["accept_cookies.notice"] }}:</strong> {{ field.customParameters.stringBag["accept_cookies.notice.value"] }}
-        </label>
+                checkbox.disabled = true;
+
+                const captchaProviderElement = document.getElementById("provider");
+
+                if(!captchaProviderElement)
+                    return;
+
+                const cloudflareTurnstile = document.createElement("script");
+
+                cloudflareTurnstile.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=onloadTurnstileCallback"
+
+                captchaProviderElement.innerHTML = "";
+
+                captchaProviderElement.appendChild(cloudflareTurnstile);
+            }
+        </script>
+
+        <div style="display:flex">
+            <input id="turnstileCheck"
+                   name="turnstileCheck"
+                   type="checkbox"
+                   style="margin-right:1rem"
+                   onchange="acceptCookieNotice(this);" />
+
+            <label for="turnstileCheck">
+                {{ field.customParameters.stringBag["accept_cookies"] }}<br />
+                <strong>{{ field.customParameters.stringBag["accept_cookies.notice"] }}:</strong> {{ field.customParameters.stringBag["accept_cookies.notice.value"] }}
+            </label>
+        </div>
+
+        <div id="provider"></div>
+    {% else %}
+        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=onloadTurnstileCallback"></script>
+    {% endif %}
+
+    <div {% for attrName, attrValue in containerAttributes %}{{ attrName }}="{% if attrValue is iterable %}{{ attrValue|join(' ') }}{% else %}{{ attrValue }}{% endif %}"{% endfor %}>
+        <div style="position: relative; top:25px; padding-bottom:25px">
+            <span class="mauticform-errormsg" style="display: none;"></span>
+        </div>
+
+        <div id="cf_turnstile"
+             style="display:block;flex-flow:row">
+        </div>
     </div>
-
-    <div id="cf_turnstile"
-         style="display:block;flex-flow:row">
-    </div>
-
-    <div id="provider"></div>
 {% endblock %}

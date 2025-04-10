@@ -6,10 +6,7 @@ use Symfony\Component\Form\AbstractType;
 
 use Symfony\Component\Form\FormBuilderInterface;
 
-use Symfony\Component\Form\Extension\Core\Type\NumberType;
-
 use Mautic\CoreBundle\Form\Type\YesNoButtonGroupType;
-use Mautic\CoreBundle\Form\Type\FormButtonsType;
 
 use MauticPlugin\MauticMultiCaptchaBundle\Integration\HcaptchaIntegration;
 
@@ -25,6 +22,19 @@ class HcaptchaType extends AbstractType {
 
     /** {@inheritDoc} */
     public function buildForm(FormBuilderInterface $builder, array $options) {
+        $builder->add("explicitConsent", YesNoButtonGroupType::class, [
+            "label" => "strings.settings.explicit_consent",
+            "data"  => $options["data"]["explicitConsent"] ?? true,
+
+            "label_attr" => [
+                "class" => "control-label"
+            ],
+
+            "attr" => [
+                "tooltip" => "strings.settings.explicit_consent.tooltip"
+            ]
+        ]);
+
         if(!empty($options["action"]))
             $builder->setAction($options["action"]);
     }
