@@ -12,6 +12,7 @@ namespace MauticPlugin\MauticMultiCaptchaBundle;
  * /
  */
 final class CaptchaEvents {
+    public const HCAPTCHA_ON_FORM_VALIDATE  = "mautic.plugin.hcaptcha.on_form_validate";
     public const RECAPTCHA_ON_FORM_VALIDATE = "mautic.plugin.recaptcha.on_form_validate";
     public const TURNSTILE_ON_FORM_VALIDATE = "mautic.plugin.turnstile.on_form_validate";
 }

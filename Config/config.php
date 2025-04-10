@@ -1,11 +1,14 @@
 <?php declare(strict_types=1);
 
+use MauticPlugin\MauticMultiCaptchaBundle\EventListener\HcaptchaFormSubscriber;
 use MauticPlugin\MauticMultiCaptchaBundle\EventListener\RecaptchaFormSubscriber;
 use MauticPlugin\MauticMultiCaptchaBundle\EventListener\TurnstileFormSubscriber;
 
+use MauticPlugin\MauticMultiCaptchaBundle\Service\HcaptchaClient;
 use MauticPlugin\MauticMultiCaptchaBundle\Service\RecaptchaClient;
 use MauticPlugin\MauticMultiCaptchaBundle\Service\TurnstileClient;
 
+use MauticPlugin\MauticMultiCaptchaBundle\Integration\HcaptchaIntegration;
 use MauticPlugin\MauticMultiCaptchaBundle\Integration\RecaptchaIntegration;
 use MauticPlugin\MauticMultiCaptchaBundle\Integration\TurnstileIntegration;
 
@@ -21,6 +24,18 @@ return [
 
     "services" => [
         "events" => [
+            "mautic.hcaptcha.event_listener.form_subscriber" => [
+                "class" => HcaptchaFormSubscriber::class,
+
+                "arguments" => [
+                    "event_dispatcher",
+                    "mautic.helper.integration",
+                    "mautic.hcaptcha.service.hcaptcha_client",
+                    "mautic.lead.model.lead",
+                    "request_stack"
+                ]
+            ],
+
             "mautic.recaptcha.event_listener.form_subscriber" => [
                 "class" => RecaptchaFormSubscriber::class,
 
@@ -49,6 +64,14 @@ return [
         ],
 
         "others" => [
+            "mautic.hcaptcha.service.hcaptcha_client" => [
+                "class" => HcaptchaClient::class,
+
+                "arguments" => [
+                    "mautic.helper.integration"
+                ]
+            ],
+
             "mautic.recaptcha.service.recaptcha_client" => [
                 "class" => RecaptchaClient::class,
 
@@ -67,6 +90,29 @@ return [
         ],
 
         "integrations" => [
+            "mautic.integration.hcaptcha" => [
+                "class" => HcaptchaIntegration::class,
+
+                "arguments" => [
+                    "event_dispatcher",
+                    "mautic.helper.cache_storage",
+                    "doctrine.orm.entity_manager",
+                    "request_stack",
+                    "router",
+                    "translator",
+                    "monolog.logger.mautic",
+                    "mautic.helper.encryption",
+                    "mautic.lead.model.lead",
+                    "mautic.lead.model.company",
+                    "mautic.helper.paths",
+                    "mautic.core.model.notification",
+                    "mautic.lead.model.field",
+                    "mautic.plugin.model.integration_entity",
+                    "mautic.lead.model.dnc",
+                    "mautic.lead.field.fields_with_unique_identifier"
+                ]
+            ],
+
             "mautic.integration.recaptcha" => [
                 "class" => RecaptchaIntegration::class,
 
