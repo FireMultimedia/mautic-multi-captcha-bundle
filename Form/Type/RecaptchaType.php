@@ -27,7 +27,7 @@ class RecaptchaType extends AbstractType {
     public function buildForm(FormBuilderInterface $builder, array $options) {
         $builder->add("scoreValidation", YesNoButtonGroupType::class, [
             "label" => "strings.recaptcha.settings.score_validation",
-            "data"  => $options["data"]["scoreValidation"] ?? false,
+            "data"  => $options["data"]["scoreValidation"] ?? true,
 
             "label_attr" => [
                 "class" => "control-label"
