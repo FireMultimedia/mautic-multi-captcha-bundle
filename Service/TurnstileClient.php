@@ -7,8 +7,6 @@ use GuzzleHttp\Exception\GuzzleException;
 
 use Mautic\PluginBundle\Helper\IntegrationHelper;
 use Mautic\PluginBundle\Integration\AbstractIntegration;
-use Mautic\FormBundle\Entity\Field;
-use Mautic\CoreBundle\Helper\ArrayHelper;
 
 use MauticPlugin\MauticMultiCaptchaBundle\Integration\TurnstileIntegration;
 
@@ -26,7 +24,7 @@ class TurnstileClient {
 
     public const VERIFICATION_URL = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
 
-    protected ?string $secretKey;
+    private ?string $secretKey;
 
     /**
      * <h2>HcaptchaClient constructor.</h2>

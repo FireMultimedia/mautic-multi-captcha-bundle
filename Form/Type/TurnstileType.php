@@ -38,7 +38,7 @@ class TurnstileType extends AbstractType {
             ],
 
             "attr" => [
-                "tooltip" => "strings.turnstile.settings.size.tooltip",
+                "tooltip" => "strings.turnstile.settings.size.tooltip"
             ]
         ])->add("theme", ChoiceType::class, [
             "label"    => "strings.turnstile.settings.theme",
@@ -56,7 +56,7 @@ class TurnstileType extends AbstractType {
             ],
 
             "attr" => [
-                "tooltip" => "strings.turnstile.settings.theme.tooltip",
+                "tooltip" => "strings.turnstile.settings.theme.tooltip"
             ]
         ]);
 

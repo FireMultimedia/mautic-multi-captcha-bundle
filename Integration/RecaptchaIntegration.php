@@ -37,7 +37,7 @@ class RecaptchaIntegration extends AbstractIntegration {
     public function getRequiredKeyFields() {
         return [
             "site_key"   => "strings.recaptcha.settings.site_key",
-            "secret_key" => "strings.recaptcha.settings.secret_key",
+            "secret_key" => "strings.recaptcha.settings.secret_key"
         ];
     }
 

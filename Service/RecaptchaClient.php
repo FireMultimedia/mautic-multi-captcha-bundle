@@ -7,7 +7,9 @@ use GuzzleHttp\Exception\GuzzleException;
 
 use Mautic\PluginBundle\Helper\IntegrationHelper;
 use Mautic\PluginBundle\Integration\AbstractIntegration;
+
 use Mautic\FormBundle\Entity\Field;
+
 use Mautic\CoreBundle\Helper\ArrayHelper;
 
 use MauticPlugin\MauticMultiCaptchaBundle\Integration\RecaptchaIntegration;
@@ -26,9 +28,7 @@ class RecaptchaClient {
 
     public const VERIFICATION_URL = "https://www.google.com/recaptcha/api/siteverify";
 
-    protected ?string $siteKey;
-
-    protected ?string $secretKey;
+    private ?string $secretKey;
 
     /**
      * <h2>RecaptchaClient constructor.</h2>
@@ -41,7 +41,6 @@ class RecaptchaClient {
         if($integrationObject instanceof AbstractIntegration) {
             $keys = $integrationObject->getKeys();
 
-            $this->siteKey   = $keys["site_key"] ?? null;
             $this->secretKey = $keys["secret_key"] ?? null;
         }
     }
@@ -65,7 +64,7 @@ class RecaptchaClient {
         $guzzleResponse = $client->post(self::VERIFICATION_URL, [
             "form_params" => [
                 "secret"   => $this->secretKey,
-                "response" => $token,
+                "response" => $token
             ]
         ]);
 

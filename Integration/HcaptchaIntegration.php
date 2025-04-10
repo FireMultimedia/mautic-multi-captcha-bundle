@@ -37,7 +37,7 @@ class HcaptchaIntegration extends AbstractIntegration {
     public function getRequiredKeyFields() {
         return [
             "site_key"   => "strings.hcaptcha.settings.site_key",
-            "secret_key" => "strings.hcaptcha.settings.secret_key",
+            "secret_key" => "strings.hcaptcha.settings.secret_key"
         ];
     }
 

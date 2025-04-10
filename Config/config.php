@@ -29,10 +29,10 @@ return [
 
                 "arguments" => [
                     "event_dispatcher",
-                    "mautic.helper.integration",
                     "mautic.hcaptcha.service.hcaptcha_client",
                     "mautic.lead.model.lead",
-                    "request_stack"
+                    "request_stack",
+                    "mautic.helper.integration"
                 ]
             ],
 
@@ -41,9 +41,9 @@ return [
 
                 "arguments" => [
                     "event_dispatcher",
-                    "mautic.helper.integration",
                     "mautic.recaptcha.service.recaptcha_client",
-                    "mautic.lead.model.lead"
+                    "mautic.lead.model.lead",
+                    "mautic.helper.integration"
                 ]
             ],
 
@@ -52,9 +52,9 @@ return [
 
                 "arguments" => [
                     "event_dispatcher",
-                    "mautic.helper.integration",
                     "mautic.turnstile.service.turnstile_client",
-                    "mautic.lead.model.lead"
+                    "mautic.lead.model.lead",
+                    "mautic.helper.integration"
                 ]
             ]
         ],

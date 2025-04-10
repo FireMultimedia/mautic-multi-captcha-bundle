@@ -40,41 +40,29 @@ class HcaptchaFormSubscriber implements EventSubscriberInterface {
 
     public const MODEL_NAME_KEY_LEAD = "lead.lead";
 
-    protected EventDispatcherInterface $eventDispatcher;
-
-    protected HcaptchaClient $hCaptchaClient;
-
-    private LeadModel $leadModel;
-
     private TranslatorInterface $translator;
 
-    private RequestStack $requestStack;
+    private bool $isConfigured = false;
 
-    private bool $hCaptchaIsConfigured = false;
-
-    protected ?string $siteKey;
+    private ?string $siteKey;
 
     /**
-     * <h2>FormSubscriber constructor.</h2>
+     * <h2>HcaptchaFormSubscriber constructor.</h2>
      *
      * @param EventDispatcherInterface $eventDispatcher
-     * @param IntegrationHelper        $integrationHelper
      * @param HcaptchaClient           $hCaptchaClient
      * @param LeadModel                $leadModel
      * @param RequestStack             $requestStack
+     * @param IntegrationHelper        $integrationHelper
      */
     public function __construct(
-        EventDispatcherInterface $eventDispatcher,
-        IntegrationHelper        $integrationHelper,
-        HcaptchaClient           $hCaptchaClient,
-        LeadModel                $leadModel,
-        RequestStack             $requestStack
-    ) {
-        $this->eventDispatcher = $eventDispatcher;
-        $this->hCaptchaClient  = $hCaptchaClient;
-        $this->leadModel       = $leadModel;
-        $this->requestStack    = $requestStack;
+        private readonly EventDispatcherInterface $eventDispatcher,
+        private readonly HcaptchaClient           $hCaptchaClient,
+        private readonly LeadModel                $leadModel,
+        private readonly RequestStack             $requestStack,
 
+        IntegrationHelper $integrationHelper
+    ) {
         $integrationObject = $integrationHelper->getIntegrationObject(HcaptchaIntegration::INTEGRATION_NAME);
 
         $this->translator = $integrationObject->getTranslator();
@@ -82,11 +70,10 @@ class HcaptchaFormSubscriber implements EventSubscriberInterface {
         if($integrationObject instanceof AbstractIntegration) {
             $keys = $integrationObject->getKeys();
 
-            $this->siteKey   = $keys["site_key"] ?? null;
-            $this->secretKey = $keys["secret_key"] ?? null;
+            $this->siteKey = $keys["site_key"] ?? null;
 
-            if($this->siteKey && $this->secretKey)
-                $this->hCaptchaIsConfigured = true;
+            if($this->siteKey && isset($keys["secret_key"]))
+                $this->isConfigured = true;
         }
     }
 
@@ -108,7 +95,7 @@ class HcaptchaFormSubscriber implements EventSubscriberInterface {
      * @return void
      */
     public function onFormBuild(FormBuilderEvent $event): void {
-        if(!$this->hCaptchaIsConfigured)
+        if(!$this->isConfigured)
             return;
 
         $event->addFormField("plugin.hcaptcha", [
@@ -148,7 +135,7 @@ class HcaptchaFormSubscriber implements EventSubscriberInterface {
      * @return void
      */
     public function onFormValidate(ValidationEvent $event) {
-        if(!$this->hCaptchaIsConfigured)
+        if(!$this->isConfigured)
             return;
 
         if(!$this->hCaptchaClient->verify($_POST["h-captcha-response"] ?? "", $this->requestStack->getCurrentRequest()?->getClientIp())) {

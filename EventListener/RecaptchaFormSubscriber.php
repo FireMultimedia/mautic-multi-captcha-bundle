@@ -39,40 +39,29 @@ class RecaptchaFormSubscriber implements EventSubscriberInterface {
 
     public const MODEL_NAME_KEY_LEAD = "lead.lead";
 
-    protected EventDispatcherInterface $eventDispatcher;
-
-    protected RecaptchaClient $recaptchaClient;
-
-    private LeadModel $leadModel;
-
     private TranslatorInterface $translator;
 
-    private bool $recaptchaIsConfigured = false;
+    private bool $isConfigured = false;
 
     private ?string $version;
 
-    protected ?string $siteKey;
-
-    protected ?string $secretKey;
+    private ?string $siteKey;
 
     /**
      * <h2>FormSubscriber constructor.</h2>
      *
      * @param EventDispatcherInterface $eventDispatcher
-     * @param IntegrationHelper        $integrationHelper
      * @param RecaptchaClient          $recaptchaClient
      * @param LeadModel                $leadModel
+     * @param IntegrationHelper        $integrationHelper
      */
     public function __construct(
-        EventDispatcherInterface $eventDispatcher,
-        IntegrationHelper        $integrationHelper,
-        RecaptchaClient          $recaptchaClient,
-        LeadModel                $leadModel
-    ) {
-        $this->eventDispatcher = $eventDispatcher;
-        $this->recaptchaClient = $recaptchaClient;
-        $this->leadModel       = $leadModel;
+        private readonly EventDispatcherInterface $eventDispatcher,
+        private readonly RecaptchaClient          $recaptchaClient,
+        private readonly LeadModel                $leadModel,
 
+        IntegrationHelper $integrationHelper
+    ) {
         $integrationObject = $integrationHelper->getIntegrationObject(RecaptchaIntegration::INTEGRATION_NAME);
 
         $this->translator = $integrationObject->getTranslator();
@@ -80,12 +69,11 @@ class RecaptchaFormSubscriber implements EventSubscriberInterface {
         if($integrationObject instanceof AbstractIntegration) {
             $keys = $integrationObject->getKeys();
 
-            $this->siteKey   = $keys["site_key"] ?? null;
-            $this->secretKey = $keys["secret_key"] ?? null;
-            $this->version   = $keys["version"] ?? null;
+            $this->siteKey = $keys["site_key"] ?? null;
+            $this->version = $keys["version"] ?? null;
 
-            if($this->siteKey && $this->secretKey)
-                $this->recaptchaIsConfigured = true;
+            if($this->siteKey && isset($keys["secret_key"]))
+                $this->isConfigured = true;
         }
     }
 
@@ -93,7 +81,7 @@ class RecaptchaFormSubscriber implements EventSubscriberInterface {
     public static function getSubscribedEvents() {
         return [
             FormEvents::FORM_ON_BUILD                 => ["onFormBuild", 0],
-            CaptchaEvents::RECAPTCHA_ON_FORM_VALIDATE => ["onFormValidate", 0],
+            CaptchaEvents::RECAPTCHA_ON_FORM_VALIDATE => ["onFormValidate", 0]
         ];
     }
 
@@ -107,7 +95,7 @@ class RecaptchaFormSubscriber implements EventSubscriberInterface {
      * @return void
      */
     public function onFormBuild(FormBuilderEvent $event): void {
-        if(!$this->recaptchaIsConfigured)
+        if(!$this->isConfigured)
             return;
 
         $event->addFormField("plugin.recaptcha", [
@@ -127,13 +115,13 @@ class RecaptchaFormSubscriber implements EventSubscriberInterface {
                 "addLeadFieldList" => false,
                 "addIsRequired"    => false,
                 "addDefaultValue"  => false,
-                "addSaveResult"    => true,
+                "addSaveResult"    => true
             ]
         ]);
 
         $event->addValidator("plugin.recaptcha.validator", [
             "eventName" => CaptchaEvents::RECAPTCHA_ON_FORM_VALIDATE,
-            "fieldType" => "plugin.recaptcha",
+            "fieldType" => "plugin.recaptcha"
         ]);
     }
 
@@ -148,7 +136,7 @@ class RecaptchaFormSubscriber implements EventSubscriberInterface {
      * @return void
      */
     public function onFormValidate(ValidationEvent $event) {
-        if(!$this->recaptchaIsConfigured)
+        if(!$this->isConfigured)
             return;
 
         if(!$this->recaptchaClient->verify($event->getValue(), $event->getField())) {

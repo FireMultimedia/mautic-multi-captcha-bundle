@@ -7,8 +7,6 @@ use GuzzleHttp\Exception\GuzzleException;
 
 use Mautic\PluginBundle\Helper\IntegrationHelper;
 use Mautic\PluginBundle\Integration\AbstractIntegration;
-use Mautic\FormBundle\Entity\Field;
-use Mautic\CoreBundle\Helper\ArrayHelper;
 
 use MauticPlugin\MauticMultiCaptchaBundle\Integration\HcaptchaIntegration;
 
@@ -26,7 +24,7 @@ class HcaptchaClient {
 
     public const VERIFICATION_URL = "https://api.hcaptcha.com/siteverify";
 
-    protected ?string $secretKey;
+    private ?string $secretKey;
 
     /**
      * <h2>HcaptchaClient constructor.</h2>

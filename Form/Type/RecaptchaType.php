@@ -34,7 +34,7 @@ class RecaptchaType extends AbstractType {
             ],
 
             "attr" => [
-                "tooltip" => "strings.recaptcha.settings.score_validation.tooltip",
+                "tooltip" => "strings.recaptcha.settings.score_validation.tooltip"
             ]
         ])->add("minScore", NumberType::class, [
             "label" => "strings.recaptcha.settings.min_score",

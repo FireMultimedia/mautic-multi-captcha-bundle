@@ -39,38 +39,27 @@ class TurnstileFormSubscriber implements EventSubscriberInterface {
 
     public const MODEL_NAME_KEY_LEAD = "lead.lead";
 
-    protected EventDispatcherInterface $eventDispatcher;
-
-    protected TurnstileClient $turnstileClient;
-
-    private LeadModel $leadModel;
-
     private TranslatorInterface $translator;
 
-    private bool $turnstileIsConfigured = false;
+    private bool $isConfigured = false;
 
-    protected ?string $siteKey;
-
-    protected ?string $secretKey;
+    private ?string $siteKey;
 
     /**
      * <h2>FormSubscriber constructor.</h2>
      *
      * @param EventDispatcherInterface $eventDispatcher
-     * @param IntegrationHelper        $integrationHelper
      * @param TurnstileClient          $turnstileClient
      * @param LeadModel                $leadModel
+     * @param IntegrationHelper        $integrationHelper
      */
     public function __construct(
-        EventDispatcherInterface $eventDispatcher,
-        IntegrationHelper        $integrationHelper,
-        TurnstileClient          $turnstileClient,
-        LeadModel                $leadModel
-    ) {
-        $this->eventDispatcher = $eventDispatcher;
-        $this->turnstileClient = $turnstileClient;
-        $this->leadModel       = $leadModel;
+        private readonly EventDispatcherInterface $eventDispatcher,
+        private readonly TurnstileClient          $turnstileClient,
+        private readonly LeadModel                $leadModel,
 
+        IntegrationHelper $integrationHelper
+    ) {
         $integrationObject = $integrationHelper->getIntegrationObject(TurnstileIntegration::INTEGRATION_NAME);
 
         $this->translator = $integrationObject->getTranslator();
@@ -78,11 +67,10 @@ class TurnstileFormSubscriber implements EventSubscriberInterface {
         if($integrationObject instanceof AbstractIntegration) {
             $keys = $integrationObject->getKeys();
 
-            $this->siteKey   = $keys["site_key"] ?? null;
-            $this->secretKey = $keys["secret_key"] ?? null;
+            $this->siteKey = $keys["site_key"] ?? null;
 
-            if($this->siteKey && $this->secretKey)
-                $this->turnstileIsConfigured = true;
+            if($this->siteKey && isset($keys["secret_key"]))
+                $this->isConfigured = true;
         }
     }
 
@@ -90,7 +78,7 @@ class TurnstileFormSubscriber implements EventSubscriberInterface {
     public static function getSubscribedEvents() {
         return [
             FormEvents::FORM_ON_BUILD                 => ["onFormBuild", 0],
-            CaptchaEvents::TURNSTILE_ON_FORM_VALIDATE => ["onFormValidate", 0],
+            CaptchaEvents::TURNSTILE_ON_FORM_VALIDATE => ["onFormValidate", 0]
         ];
     }
 
@@ -104,7 +92,7 @@ class TurnstileFormSubscriber implements EventSubscriberInterface {
      * @return void
      */
     public function onFormBuild(FormBuilderEvent $event): void {
-        if(!$this->turnstileIsConfigured)
+        if(!$this->isConfigured)
             return;
 
         $event->addFormField("plugin.turnstile", [
@@ -123,13 +111,13 @@ class TurnstileFormSubscriber implements EventSubscriberInterface {
                 "addLeadFieldList" => false,
                 "addIsRequired"    => false,
                 "addDefaultValue"  => false,
-                "addSaveResult"    => true,
+                "addSaveResult"    => true
             ]
         ]);
 
         $event->addValidator("plugin.turnstile.validator", [
             "eventName" => CaptchaEvents::TURNSTILE_ON_FORM_VALIDATE,
-            "fieldType" => "plugin.turnstile",
+            "fieldType" => "plugin.turnstile"
         ]);
     }
 
@@ -144,10 +132,10 @@ class TurnstileFormSubscriber implements EventSubscriberInterface {
      * @return void
      */
     public function onFormValidate(ValidationEvent $event) {
-        if(!$this->turnstileIsConfigured)
+        if(!$this->isConfigured)
             return;
 
-        if(!$this->turnstileClient->verify($_POST["cf-turnstile-response"])) {
+        if(!$this->turnstileClient->verify($_POST["cf-turnstile-response"] ?? "")) {
             $event->failedValidation($this->translator === null ? "Turnstile was not successful." : $this->translator->trans("strings.turnstile.failure_message"));
 
             return;

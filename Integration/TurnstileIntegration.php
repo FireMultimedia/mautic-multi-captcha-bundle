@@ -37,7 +37,7 @@ class TurnstileIntegration extends AbstractIntegration {
     public function getRequiredKeyFields() {
         return [
             "site_key"   => "strings.turnstile.settings.site_key",
-            "secret_key" => "strings.turnstile.settings.secret_key",
+            "secret_key" => "strings.turnstile.settings.secret_key"
         ];
     }
 
