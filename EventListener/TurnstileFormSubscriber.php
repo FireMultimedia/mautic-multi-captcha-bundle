@@ -22,34 +22,32 @@ use Mautic\LeadBundle\LeadEvents;
 use Mautic\PluginBundle\Helper\IntegrationHelper;
 use Mautic\PluginBundle\Integration\AbstractIntegration;
 
-use MauticPlugin\MauticMultiCaptchaBundle\Form\Type\RecaptchaType;
-use MauticPlugin\MauticMultiCaptchaBundle\Integration\RecaptchaIntegration;
-use MauticPlugin\MauticMultiCaptchaBundle\Service\RecaptchaClient;
+use MauticPlugin\MauticMultiCaptchaBundle\Form\Type\TurnstileType;
+use MauticPlugin\MauticMultiCaptchaBundle\Integration\TurnstileIntegration;
+use MauticPlugin\MauticMultiCaptchaBundle\Service\TurnstileClient;
 use MauticPlugin\MauticMultiCaptchaBundle\CaptchaEvents;
 
 /**
- * <h1>Class RecaptchaFormSubscriber</h1>
+ * <h1>Class TurnstileFormSubscriber</h1>
  *
  * @package MauticPlugin\MauticMultiCaptchaBundle\EventListener
  *
  * @authors see: composer.json
  * @license GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
  */
-class RecaptchaFormSubscriber implements EventSubscriberInterface {
+class TurnstileFormSubscriber implements EventSubscriberInterface {
 
     public const MODEL_NAME_KEY_LEAD = "lead.lead";
 
     protected EventDispatcherInterface $eventDispatcher;
 
-    protected RecaptchaClient $recaptchaClient;
+    protected TurnstileClient $turnstileClient;
 
     private LeadModel $leadModel;
 
     private TranslatorInterface $translator;
 
-    private bool $recaptchaIsConfigured = false;
-
-    private ?string $version;
+    private bool $turnstileIsConfigured = false;
 
     protected ?string $siteKey;
 
@@ -60,20 +58,20 @@ class RecaptchaFormSubscriber implements EventSubscriberInterface {
      *
      * @param EventDispatcherInterface $eventDispatcher
      * @param IntegrationHelper        $integrationHelper
-     * @param RecaptchaClient          $recaptchaClient
+     * @param TurnstileClient          $turnstileClient
      * @param LeadModel                $leadModel
      */
     public function __construct(
         EventDispatcherInterface $eventDispatcher,
         IntegrationHelper        $integrationHelper,
-        RecaptchaClient          $recaptchaClient,
+        TurnstileClient          $turnstileClient,
         LeadModel                $leadModel
     ) {
         $this->eventDispatcher = $eventDispatcher;
-        $this->recaptchaClient = $recaptchaClient;
+        $this->turnstileClient = $turnstileClient;
         $this->leadModel       = $leadModel;
 
-        $integrationObject = $integrationHelper->getIntegrationObject(RecaptchaIntegration::INTEGRATION_NAME);
+        $integrationObject = $integrationHelper->getIntegrationObject(TurnstileIntegration::INTEGRATION_NAME);
 
         $this->translator = $integrationObject->getTranslator();
 
@@ -82,10 +80,9 @@ class RecaptchaFormSubscriber implements EventSubscriberInterface {
 
             $this->siteKey   = $keys["site_key"] ?? null;
             $this->secretKey = $keys["secret_key"] ?? null;
-            $this->version   = $keys["version"] ?? null;
 
             if($this->siteKey && $this->secretKey)
-                $this->recaptchaIsConfigured = true;
+                $this->turnstileIsConfigured = true;
         }
     }
 
@@ -93,7 +90,7 @@ class RecaptchaFormSubscriber implements EventSubscriberInterface {
     public static function getSubscribedEvents() {
         return [
             FormEvents::FORM_ON_BUILD                 => ["onFormBuild", 0],
-            CaptchaEvents::RECAPTCHA_ON_FORM_VALIDATE => ["onFormValidate", 0],
+            CaptchaEvents::TURNSTILE_ON_FORM_VALIDATE => ["onFormValidate", 0],
         ];
     }
 
@@ -107,20 +104,19 @@ class RecaptchaFormSubscriber implements EventSubscriberInterface {
      * @return void
      */
     public function onFormBuild(FormBuilderEvent $event): void {
-        if(!$this->recaptchaIsConfigured)
+        if(!$this->turnstileIsConfigured)
             return;
 
-        $event->addFormField("plugin.recaptcha", [
-            "label"    => "strings.recaptcha.plugin.name",
-            "formType" => RecaptchaType::class,
-            "template" => "@MauticMultiCaptcha/Integration/recaptcha.html.twig",
+        $event->addFormField("plugin.turnstile", [
+            "label"    => "strings.turnstile.plugin.name",
+            "formType" => TurnstileType::class,
+            "template" => "@MauticMultiCaptcha/Integration/turnstile.html.twig",
             "site_key" => $this->siteKey,
-            "version"  => $this->version,
 
             "stringBag" => [
-                "accept_cookies"              => $this->translator->trans("strings.recaptcha.accept_cookies"),
-                "accept_cookies.notice"       => $this->translator->trans("strings.recaptcha.accept_cookies.notice"),
-                "accept_cookies.notice.value" => $this->translator->trans("strings.recaptcha.accept_cookies.notice.value")
+                "accept_cookies"              => $this->translator->trans("strings.turnstile.accept_cookies"),
+                "accept_cookies.notice"       => $this->translator->trans("strings.turnstile.accept_cookies.notice"),
+                "accept_cookies.notice.value" => $this->translator->trans("strings.turnstile.accept_cookies.notice.value")
             ],
 
             "builderOptions" => [
@@ -131,9 +127,9 @@ class RecaptchaFormSubscriber implements EventSubscriberInterface {
             ]
         ]);
 
-        $event->addValidator("plugin.recaptcha.validator", [
-            "eventName" => CaptchaEvents::RECAPTCHA_ON_FORM_VALIDATE,
-            "fieldType" => "plugin.recaptcha",
+        $event->addValidator("plugin.turnstile.validator", [
+            "eventName" => CaptchaEvents::TURNSTILE_ON_FORM_VALIDATE,
+            "fieldType" => "plugin.turnstile",
         ]);
     }
 
@@ -148,11 +144,11 @@ class RecaptchaFormSubscriber implements EventSubscriberInterface {
      * @return void
      */
     public function onFormValidate(ValidationEvent $event) {
-        if(!$this->recaptchaIsConfigured)
+        if(!$this->turnstileIsConfigured)
             return;
 
-        if(!$this->recaptchaClient->verify($event->getValue(), $event->getField())) {
-            $event->failedValidation($this->translator === null ? "reCAPTCHA was not successful." : $this->translator->trans("strings.recaptcha.failure_message"));
+        if(!$this->turnstileClient->verify($_POST["cf-turnstile-response"])) {
+            $event->failedValidation($this->translator === null ? "Turnstile was not successful." : $this->translator->trans("strings.turnstile.failure_message"));
 
             return;
         }

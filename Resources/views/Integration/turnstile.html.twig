@@ -148,7 +148,6 @@ Varables
 {% set formName = formName|replace({'_': ''})|default('mauticform') %}
 
 {% block recaptcha %}
-    {% set version = field.customParameters.version %}
     {% set siteKey = field.customParameters.site_key %}
 
     {% if field.showLabel %}
@@ -158,13 +157,16 @@ Varables
     {% endif %}
 
     <script type="text/javascript">
-        function verifyCallback_{{ formName }}(response) {
-            document.getElementById("mauticform_input_{{ formName }}_{{ field.alias }}").value = response;
-        }
+        function onloadTurnstileCallback() {
+            turnstile.render("#cf_turnstile", {
+                "sitekey": "{{ siteKey }}",
+                "size": "{{ field.properties.size }}",
+                "theme": "{{ field.properties.theme }}",
+                "response-field-name": "cf-turnstile-response",
 
-        function onLoad_{{ formName }}() {
-            grecaptcha.execute("{{ siteKey }}", {action: "form"}).then(function(token) {
-                verifyCallback_{{ formName }}(token);
+                callback: function(token) {
+                    console.log(`Challenge Success ${token}`);
+                }
             });
         }
 
@@ -174,54 +176,37 @@ Varables
 
             checkbox.disabled = true;
 
-            const captchaRequestElement = document.getElementById("captcha_request");
+            const captchaProviderElement = document.getElementById("provider");
 
-            if(!captchaRequestElement)
+            if(!captchaProviderElement)
                 return;
 
-            const googleReCaptcha = document.createElement("script");
+            const cloudflareTurnstile = document.createElement("script");
 
-            const sources = {
-                "v2": "https://www.google.com/recaptcha/api.js",
-                "v3": "https://www.google.com/recaptcha/api.js?render={{ siteKey }}&onload=onLoad_{{ formName }}"
-            };
+            cloudflareTurnstile.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=onloadTurnstileCallback"
 
-            googleReCaptcha.src = sources.{{ version }};
+            captchaProviderElement.innerHTML = "";
 
-            captchaRequestElement.innerHTML = "";
-
-            captchaRequestElement.appendChild(googleReCaptcha);
+            captchaProviderElement.appendChild(cloudflareTurnstile);
         }
     </script>
 
     <div style="display:flex">
-        <input id="recaptchaCheck"
-               name="recaptchaCheck"
+        <input id="turnstileCheck"
+               name="turnstileCheck"
                type="checkbox"
                style="margin-right:1rem"
                onchange="acceptCookieNotice(this);" />
 
-        <label for="recaptchaCheck">
+        <label for="turnstileCheck">
             {{ field.customParameters.stringBag["accept_cookies"] }}<br />
             <strong>{{ field.customParameters.stringBag["accept_cookies.notice"] }}:</strong> {{ field.customParameters.stringBag["accept_cookies.notice.value"] }}
         </label>
     </div>
 
-    <div id="captcha_request"></div>
-
-    <div {% for attrName, attrValue in containerAttributes %}{{ attrName }}="{% if attrValue is iterable %}{{ attrValue|join(' ') }}{% else %}{{ attrValue }}{% endif %}"{% endfor %}>
-        <div style="position: relative; top:25px; padding-bottom:25px">
-            <span class="mauticform-errormsg" style="display: none;"></span>
-        </div>
-
-        {% if version == 'v2' %}
-            <div class="g-recaptcha"
-                 data-sitekey="{{ siteKey }}"
-                 data-callback="verifyCallback_{{ formName }}">
-            </div>
-        {% endif %}
-
-        <input type="hidden"
-               {% for attrName, attrValue in inputAttributes %}{{ attrName }}="{% if attrValue is iterable %}{{ attrValue|join(' ') }}{% else %}{{ attrValue }}{% endif %}"{% endfor %}>
+    <div id="cf_turnstile"
+         style="display:block;flex-flow:row">
     </div>
+
+    <div id="provider"></div>
 {% endblock %}

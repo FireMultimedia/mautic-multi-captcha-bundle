@@ -26,7 +26,7 @@ class RecaptchaType extends AbstractType {
     /** {@inheritDoc} */
     public function buildForm(FormBuilderInterface $builder, array $options) {
         $builder->add("scoreValidation", YesNoButtonGroupType::class, [
-            "label" => "mautic.recaptcha.score.validation",
+            "label" => "strings.recaptcha.settings.score_validation",
             "data"  => $options["data"]["scoreValidation"] ?? false,
 
             "label_attr" => [
@@ -34,35 +34,21 @@ class RecaptchaType extends AbstractType {
             ],
 
             "attr" => [
-                "tooltip" => "mautic.recaptcha.min.score.tooltip",
+                "tooltip" => "strings.recaptcha.settings.score_validation.tooltip",
+            ]
+        ])->add("minScore", NumberType::class, [
+            "label" => "strings.recaptcha.settings.min_score",
+            "data"  => isset($options["data"]["minScore"]) ? (float) $options["data"]["minScore"] : 0.8,
+
+            "label_attr" => [
+                "class" => "control-label"
+            ],
+
+            "attr" => [
+                "class"        => "form-control",
+                "data-show-on" => '{"formfield_properties_scoreValidation_1":"checked"}'
             ]
         ]);
-
-        $builder->add("minScore", NumberType::class, [
-                "label" => "mautic.recaptcha.min.score",
-                "data"  => isset($options["data"]["minScore"]) ? (float) $options["data"]["minScore"] : 0.8,
-
-                "label_attr" => [
-                    "class" => "control-label"
-                ],
-
-                "attr" => [
-                    "class"        => "form-control",
-                    "data-show-on" => '{"formfield_properties_scoreValidation_1":"checked"}'
-                ]
-            ]
-        );
-
-        $builder->add("buttons", FormButtonsType::class, [
-                "apply_text"     => false,
-                "save_text"      => "mautic.core.form.submit",
-                "cancel_onclick" => "javascript:void(0);",
-
-                "cancel_attr" => [
-                    "data-dismiss" => "modal",
-                ]
-            ]
-        );
 
         if(!empty($options["action"]))
             $builder->setAction($options["action"]);

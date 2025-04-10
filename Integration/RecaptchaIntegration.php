@@ -36,8 +36,8 @@ class RecaptchaIntegration extends AbstractIntegration {
     /** {@inheritDoc} */
     public function getRequiredKeyFields() {
         return [
-            "site_key"   => "mautic.integration.recaptcha.site_key",
-            "secret_key" => "mautic.integration.recaptcha.secret_key",
+            "site_key"   => "strings.recaptcha.settings.site_key",
+            "secret_key" => "strings.recaptcha.settings.secret_key",
         ];
     }
 
@@ -45,14 +45,14 @@ class RecaptchaIntegration extends AbstractIntegration {
     public function appendToForm(&$builder, $data, $formArea): void {
         if($formArea === "keys")
             $builder->add("version", ChoiceType::class, [
-                "label"       => "mautic.recaptcha.version",
+                "label"       => "strings.recaptcha.settings.version",
                 "required"    => false,
                 "placeholder" => false,
                 "data"        => $data["version"] ?? "v2",
 
                 "choices" => [
-                    "mautic.recaptcha.v2" => "v2",
-                    "mautic.recaptcha.v3" => "v3",
+                    "strings.recaptcha.settings.version.option.v2" => "v2",
+                    "strings.recaptcha.settings.version.option.v3" => "v3",
                 ],
 
                 "label_attr" => [
