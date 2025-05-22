@@ -11,7 +11,7 @@
         "email": "support@firemultimedia.nl"
     }],
     "require": {
-        "mautic/core-lib": "^6.0"
+        "mautic/core-lib": "^5.0|^6.0"
     },
     "extra": {
         "install-directory-name": "MauticMultiCaptchaBundle"
