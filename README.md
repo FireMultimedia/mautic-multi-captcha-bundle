@@ -3,15 +3,19 @@
 [![mautic](https://img.shields.io/badge/mautic-6-blue.svg)](https://www.mautic.org/mixin/recaptcha/)
 
 This project has been pruned to **ONLY** support Mautic 6.
+You _can_ use it with Mautic 5 as well, but we do not officially support this.
+Any issues opened from Mautic 5 will be regarded as spam.
 
 ## Installation
-Execute `composer require firemultimedia/mautic-multi-captcha-bundle` in the main directory of the mautic installation.
+ 1. Execute `composer require firemultimedia/mautic-multi-captcha-bundle` in the main directory of the mautic installation
+ 2. flush the cache `php bin/console cache:clear`.
+ 3. Navigate to the Plugins page and click "Install/Upgrade Plugins".
 
-## Configuration
-Navigate to the Plugins page and click "Install/Upgrade Plugins". You should now see three new plug-ins.
+You should now see three new plug-ins.
 
 ![plugins](.github/doc/plugins.png "plugins")
 
+## Configuration
 ### hCaptcha
 Collect your keys from [hCaptcha](https://dashboard.hcaptcha.com/sites/new) and place them here:
 
