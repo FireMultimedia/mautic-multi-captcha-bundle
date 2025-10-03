@@ -1,8 +1,9 @@
 # Mautic Multi-CAPTCHA Plugin
 [![license](https://img.shields.io/packagist/l/koco/mautic-recaptcha-bundle.svg)](LICENSE)
-[![mautic](https://img.shields.io/badge/mautic-6-blue.svg)](https://www.mautic.org/mixin/recaptcha/)
+[![mautic6](https://img.shields.io/badge/mautic-6-blue.svg)](https://www.mautic.org/mixin/recaptcha/)
+[![mautic7](https://img.shields.io/badge/mautic-7-blue.svg)](https://www.mautic.org/mixin/recaptcha/)
 
-This project has been pruned to **ONLY** support Mautic 6.
+This project has been pruned to **ONLY** support Mautic 6 and has been tested on Mautic 7.0.0-alpha.
 You _can_ use it with Mautic 5 as well, but we do not officially support this.
 Any issues opened from Mautic 5 will be regarded as spam.
 
