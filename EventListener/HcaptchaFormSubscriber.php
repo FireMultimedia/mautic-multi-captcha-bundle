@@ -138,15 +138,23 @@ class HcaptchaFormSubscriber implements EventSubscriberInterface {
         if(!$this->isConfigured)
             return;
 
-        if(!$this->hCaptchaClient->verify($_POST["h-captcha-response"] ?? "", $this->requestStack->getCurrentRequest()?->getClientIp())) {
-            $event->failedValidation($this->translator === null ? "hCaptcha was not successful." : $this->translator->trans("strings.hcaptcha.failure_message"));
-
+        if($this->hCaptchaClient->verify($_POST["h-captcha-response"] ?? "", $this->requestStack->getCurrentRequest()?->getClientIp()))
             return;
-        }
+
+        $event->failedValidation($this->translator === null ? "hCaptcha was not successful." : $this->translator->trans("strings.hcaptcha.failure_message"));
 
         $this->eventDispatcher->addListener(LeadEvents::LEAD_POST_SAVE, function(LeadEvent $event) {
-            if($event->isNew())
-                $this->leadModel->deleteEntity($event->getLead());
+            if(!$event->isNew())
+                return;
+
+            $leadId = $event->getLead();
+
+            $this->eventDispatcher->addListener("kernel.terminate", function() use ($leadId) {
+                $lead = $this->leadModel->getEntity($leadId);
+
+                if($lead)
+                    $this->leadModel->deleteEntity($lead);
+            });
         }, -255);
     }
 

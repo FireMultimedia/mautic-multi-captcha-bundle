@@ -135,15 +135,23 @@ class TurnstileFormSubscriber implements EventSubscriberInterface {
         if(!$this->isConfigured)
             return;
 
-        if(!$this->turnstileClient->verify($_POST["cf-turnstile-response"] ?? "")) {
-            $event->failedValidation($this->translator === null ? "Turnstile was not successful." : $this->translator->trans("strings.turnstile.failure_message"));
-
+        if($this->turnstileClient->verify($_POST["cf-turnstile-response"] ?? ""))
             return;
-        }
+
+        $event->failedValidation($this->translator === null ? "Turnstile was not successful." : $this->translator->trans("strings.turnstile.failure_message"));
 
         $this->eventDispatcher->addListener(LeadEvents::LEAD_POST_SAVE, function(LeadEvent $event) {
-            if($event->isNew())
-                $this->leadModel->deleteEntity($event->getLead());
+            if(!$event->isNew())
+                return;
+
+            $leadId = $event->getLead();
+
+            $this->eventDispatcher->addListener("kernel.terminate", function() use ($leadId) {
+                $lead = $this->leadModel->getEntity($leadId);
+
+                if($lead)
+                    $this->leadModel->deleteEntity($lead);
+            });
         }, -255);
     }
 
