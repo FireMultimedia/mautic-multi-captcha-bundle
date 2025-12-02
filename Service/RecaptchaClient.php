@@ -73,11 +73,13 @@ class RecaptchaClient {
         if(!array_key_exists("success", $response) || $response["success"] !== true)
             return false;
 
+        if(!(bool)ArrayHelper::getValue("scoreValidation", $field->getProperties()))
+            return $response["success"];
+
         $score           = (float) ArrayHelper::getValue("score", $response);
-        $scoreValidation = ArrayHelper::getValue("scoreValidation", $field->getProperties());
         $minScore        = (float) ArrayHelper::getValue("minScore", $field->getProperties());
 
-        return !($score && $scoreValidation && $minScore > $score);
+        return $score && $score > $minScore;
     }
 
 }
