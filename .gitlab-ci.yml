@@ -17,18 +17,17 @@ test:
   before_script:
     # Install system dependencies
     - apt-get update -yqq
-    - apt-get install -yqq git unzip libzip-dev libpng-dev libjpeg-dev libfreetype6-dev libc-client-dev libkrb5-dev
+    - apt-get install -yqq git unzip libzip-dev libpng-dev libjpeg-dev libfreetype6-dev
     
-    # Install required PHP extensions
+    # Install required PHP extensions (skip imap as it's not needed for our tests)
     - docker-php-ext-configure gd --with-freetype --with-jpeg
-    - docker-php-ext-configure imap --with-kerberos --with-imap-ssl
-    - docker-php-ext-install -j$(nproc) bcmath gd imap sockets zip
+    - docker-php-ext-install -j$(nproc) bcmath gd sockets zip
     
     # Install Composer
     - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
     
-    # Install dependencies
-    - composer install --no-interaction --prefer-dist --optimize-autoloader
+    # Install dependencies (ignore platform requirements for extensions not needed in tests)
+    - composer install --no-interaction --prefer-dist --optimize-autoloader --ignore-platform-req=ext-imap
   script:
     - vendor/bin/phpunit --testdox --colors=never
   artifacts:
