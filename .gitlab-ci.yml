@@ -15,9 +15,19 @@ test:
   stage: test
   image: php:8.1
   before_script:
+    # Install system dependencies
     - apt-get update -yqq
-    - apt-get install -yqq git unzip
+    - apt-get install -yqq git unzip libzip-dev libpng-dev libjpeg-dev libfreetype6-dev libc-client-dev libkrb5-dev
+    
+    # Install required PHP extensions
+    - docker-php-ext-configure gd --with-freetype --with-jpeg
+    - docker-php-ext-configure imap --with-kerberos --with-imap-ssl
+    - docker-php-ext-install -j$(nproc) bcmath gd imap sockets zip
+    
+    # Install Composer
     - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+    
+    # Install dependencies
     - composer install --no-interaction --prefer-dist --optimize-autoloader
   script:
     - vendor/bin/phpunit --testdox --colors=never
