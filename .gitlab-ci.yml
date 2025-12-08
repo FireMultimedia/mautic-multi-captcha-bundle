@@ -14,6 +14,8 @@ cache:
 test:
   stage: test
   image: php:8.1
+  tags:
+    - docker
   before_script:
     # Install system dependencies
     - apt-get update -yqq
@@ -38,6 +40,8 @@ test:
 package:
   stage: package
   image: alpine:latest
+  tags:
+    - docker
   needs:
     - test
   before_script:
