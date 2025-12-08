@@ -6,7 +6,6 @@ use MauticPlugin\MauticMultiCaptchaBundle\Service\AltchaClient;
 use MauticPlugin\MauticMultiCaptchaBundle\Integration\AltchaIntegration;
 use Mautic\PluginBundle\Helper\IntegrationHelper;
 use Mautic\PluginBundle\Integration\AbstractIntegration;
-use Psr\Log\LoggerInterface;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -285,10 +284,7 @@ class AltchaClientTest extends TestCase {
             ->with(AltchaIntegration::INTEGRATION_NAME)
             ->willReturn($integration);
         
-        // Mock Logger
-        $logger = $this->createMock(LoggerInterface::class);
-        
-        return new AltchaClient($integrationHelper, $logger);
+        return new AltchaClient($integrationHelper);
     }
 
     /**

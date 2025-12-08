@@ -7,7 +7,6 @@ use AltchaOrg\Altcha\ChallengeOptions;
 use Mautic\PluginBundle\Helper\IntegrationHelper;
 use Mautic\PluginBundle\Integration\AbstractIntegration;
 use MauticPlugin\MauticMultiCaptchaBundle\Integration\AltchaIntegration;
-use Psr\Log\LoggerInterface;
 
 /**
  * <h1>Class AltchaClient</h1>
@@ -20,26 +19,20 @@ use Psr\Log\LoggerInterface;
 class AltchaClient {
 
     private ?string $hmacKey;
-    private LoggerInterface $logger;
     private ?Altcha $altcha = null;
 
     /**
      * <h2>AltchaClient constructor.</h2>
      *
      * @param IntegrationHelper $integrationHelper
-     * @param LoggerInterface $logger
      * 
      * @throws \RuntimeException if Altcha library is not installed
      * @throws \RuntimeException if HMAC key is not configured
      */
-    public function __construct(IntegrationHelper $integrationHelper, LoggerInterface $logger) {
-        $this->logger = $logger;
-
+    public function __construct(IntegrationHelper $integrationHelper) {
         // Check if Altcha library is available
         if (!class_exists(Altcha::class)) {
-            $message = 'Altcha library not installed. Run: composer require altcha-org/altcha';
-            $this->logger->error($message);
-            throw new \RuntimeException($message);
+            throw new \RuntimeException('Altcha library not installed. Run: composer require altcha-org/altcha');
         }
 
         $integrationObject = $integrationHelper->getIntegrationObject(AltchaIntegration::INTEGRATION_NAME);
@@ -53,9 +46,7 @@ class AltchaClient {
 
         // Check if HMAC key is configured
         if (empty($this->hmacKey)) {
-            $message = 'Altcha HMAC key not configured';
-            $this->logger->error($message);
-            throw new \RuntimeException($message);
+            throw new \RuntimeException('Altcha HMAC key not configured');
         }
 
         // Initialize Altcha instance
@@ -93,12 +84,6 @@ class AltchaClient {
                 'signature' => $challenge->signature
             ];
         } catch (\Exception $e) {
-            $this->logger->error('Altcha challenge generation failed', [
-                'exception' => $e->getMessage(),
-                'maxNumber' => $maxNumber,
-                'expires' => $expiresInSeconds
-            ]);
-            
             return [];
         }
     }
@@ -118,17 +103,8 @@ class AltchaClient {
             
             return $result === true;
         } catch (\JsonException $e) {
-            $this->logger->error('Altcha payload JSON decode failed', [
-                'exception' => $e->getMessage(),
-                'payload' => $payload
-            ]);
-            
             return false;
         } catch (\Exception $e) {
-            $this->logger->error('Altcha verification failed', [
-                'exception' => $e->getMessage()
-            ]);
-            
             return false;
         }
     }
