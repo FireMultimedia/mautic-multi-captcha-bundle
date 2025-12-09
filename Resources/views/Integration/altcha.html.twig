@@ -158,12 +158,14 @@ Varables
 
     {# Load Altcha widget script from local assets with absolute URL for embedded forms #}
     {# Only load script once per page, even if multiple forms are present #}
+    {# Use inline check to prevent duplicate loading and crossorigin for CORS support #}
     <script>
         if (!window.altchaLoaded) {
             window.altchaLoaded = true;
             var script = document.createElement('script');
             script.src = '{{ absolute_url(asset('plugins/MauticMultiCaptchaBundle/Assets/altcha.min.js')) }}';
             script.type = 'module';
+            script.crossOrigin = 'anonymous';
             document.head.appendChild(script);
         }
     </script>

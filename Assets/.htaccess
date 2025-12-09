@@ -1,0 +1,7 @@
+# Allow CORS for embedded forms
+<IfModule mod_headers.c>
+    # Allow access from any origin for JavaScript modules
+    Header set Access-Control-Allow-Origin "*"
+    Header set Access-Control-Allow-Methods "GET, OPTIONS"
+    Header set Access-Control-Allow-Headers "Content-Type"
+</IfModule>
