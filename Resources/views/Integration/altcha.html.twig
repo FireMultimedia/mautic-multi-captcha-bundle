@@ -157,7 +157,16 @@ Varables
     {% set challengeData = field.customParameters.challenge|default(null) %}
 
     {# Load Altcha widget script from local assets with absolute URL for embedded forms #}
-    <script src="{{ absolute_url(asset('plugins/MauticMultiCaptchaBundle/Assets/altcha.min.js')) }}" type="module" async defer></script>
+    {# Only load script once per page, even if multiple forms are present #}
+    <script>
+        if (!window.altchaLoaded) {
+            window.altchaLoaded = true;
+            var script = document.createElement('script');
+            script.src = '{{ absolute_url(asset('plugins/MauticMultiCaptchaBundle/Assets/altcha.min.js')) }}';
+            script.type = 'module';
+            document.head.appendChild(script);
+        }
+    </script>
 
     {% if invisible %}
         {# Invisible mode: Hide label and widget by default, show only when needed #}
