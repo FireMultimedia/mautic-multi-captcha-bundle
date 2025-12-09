@@ -65,7 +65,7 @@ class AltchaClient {
      */
     public function createChallenge(int $maxNumber, int $expiresInSeconds): array {
         try {
-            $expiresDateTime = new \DateTime();
+            $expiresDateTime = new \DateTime('now', new \DateTimeZone('UTC'));
             $expiresDateTime->modify('+' . $expiresInSeconds . ' seconds');
             
             $options = new ChallengeOptions(
@@ -74,6 +74,10 @@ class AltchaClient {
             );
 
             $challenge = $this->altcha->createChallenge($options);
+
+            // Log the created challenge for debugging
+            error_log('Altcha challenge created - Salt: ' . $challenge->salt);
+            error_log('Altcha challenge created - Signature: ' . $challenge->signature);
 
             // Convert Challenge object to array
             return [
@@ -84,6 +88,7 @@ class AltchaClient {
                 'signature' => $challenge->signature
             ];
         } catch (\Exception $e) {
+            error_log('Altcha challenge creation failed: ' . $e->getMessage() . ' | Trace: ' . $e->getTraceAsString());
             return [];
         }
     }
@@ -93,18 +98,52 @@ class AltchaClient {
      * 
      * Verifies an Altcha challenge payload.
      *
-     * @param string $payload JSON string containing the challenge solution
+     * @param string $payload JSON string or base64-encoded string containing the challenge solution
      * 
      * @return bool True if the payload is valid, false otherwise
      */
     public function verify(string $payload): bool {
         try {
+            // Log the incoming payload for debugging
+            error_log('Altcha verify - Raw payload: ' . $payload);
+            
+            // Check if payload is base64 encoded (from the widget)
+            if (preg_match('/^[A-Za-z0-9+\/=]+$/', $payload)) {
+                $decoded = base64_decode($payload, true);
+                if ($decoded !== false && json_decode($decoded) !== null) {
+                    error_log('Altcha verify - Decoded payload: ' . $decoded);
+                    $payload = $decoded;
+                }
+            }
+            
+            // Parse the payload to check its structure
+            $payloadData = json_decode($payload, true);
+            if ($payloadData === null) {
+                error_log('Altcha verify - Invalid JSON payload');
+                return false;
+            }
+            
+            error_log('Altcha verify - Payload data: ' . print_r($payloadData, true));
+            
+            // Check if required fields are present
+            if (!isset($payloadData['algorithm']) || !isset($payloadData['challenge']) || 
+                !isset($payloadData['number']) || !isset($payloadData['salt']) || 
+                !isset($payloadData['signature'])) {
+                error_log('Altcha verify - Missing required fields in payload');
+                return false;
+            }
+            
+            // Verify the solution with checkExpires=true
             $result = $this->altcha->verifySolution($payload, true);
+            
+            error_log('Altcha verify - Result: ' . ($result ? 'true' : 'false'));
             
             return $result === true;
         } catch (\JsonException $e) {
+            error_log('Altcha verify - JsonException: ' . $e->getMessage());
             return false;
         } catch (\Exception $e) {
+            error_log('Altcha verify - Exception: ' . $e->getMessage() . ' | Trace: ' . $e->getTraceAsString());
             return false;
         }
     }
