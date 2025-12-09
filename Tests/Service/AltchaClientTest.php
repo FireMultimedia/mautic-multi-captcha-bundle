@@ -132,6 +132,7 @@ class AltchaClientTest extends TestCase {
             }
 
             // Create payload (base64-encoded JSON as expected by Altcha)
+            // The signature from the challenge should be used as-is
             $payloadData = [
                 'algorithm' => $challenge['algorithm'],
                 'challenge' => $challenge['challenge'],

@@ -65,19 +65,16 @@ class AltchaClient {
      */
     public function createChallenge(int $maxNumber, int $expiresInSeconds): array {
         try {
-            $expiresDateTime = new \DateTime('now', new \DateTimeZone('UTC'));
-            $expiresDateTime->modify('+' . $expiresInSeconds . ' seconds');
+            // Create challenge with expiration time
+            $expires = new \DateTimeImmutable();
+            $expires = $expires->add(new \DateInterval('PT' . $expiresInSeconds . 'S'));
             
             $options = new ChallengeOptions(
                 maxNumber: $maxNumber,
-                expires: $expiresDateTime
+                expires: $expires
             );
 
             $challenge = $this->altcha->createChallenge($options);
-
-            // Log the created challenge for debugging
-            error_log('Altcha challenge created - Salt: ' . $challenge->salt);
-            error_log('Altcha challenge created - Signature: ' . $challenge->signature);
 
             // Convert Challenge object to array
             return [
@@ -104,46 +101,29 @@ class AltchaClient {
      */
     public function verify(string $payload): bool {
         try {
-            // Log the incoming payload for debugging
-            error_log('Altcha verify - Raw payload: ' . $payload);
-            
-            // Check if payload is base64 encoded (from the widget)
-            if (preg_match('/^[A-Za-z0-9+\/=]+$/', $payload)) {
-                $decoded = base64_decode($payload, true);
-                if ($decoded !== false && json_decode($decoded) !== null) {
-                    error_log('Altcha verify - Decoded payload: ' . $decoded);
-                    $payload = $decoded;
+            // Ensure payload is base64 encoded (required by Altcha library)
+            // If it's already base64, use it as-is
+            // If it's JSON, encode it to base64
+            $decoded = base64_decode($payload, true);
+            if ($decoded === false || json_decode($decoded) === null) {
+                // Not valid base64 or not valid JSON after decoding
+                // Try to parse as JSON directly
+                $payloadData = json_decode($payload, true);
+                if ($payloadData !== null) {
+                    // It's JSON, encode it to base64
+                    $payload = base64_encode($payload);
+                } else {
+                    return false;
                 }
-            }
-            
-            // Parse the payload to check its structure
-            $payloadData = json_decode($payload, true);
-            if ($payloadData === null) {
-                error_log('Altcha verify - Invalid JSON payload');
-                return false;
-            }
-            
-            error_log('Altcha verify - Payload data: ' . print_r($payloadData, true));
-            
-            // Check if required fields are present
-            if (!isset($payloadData['algorithm']) || !isset($payloadData['challenge']) || 
-                !isset($payloadData['number']) || !isset($payloadData['salt']) || 
-                !isset($payloadData['signature'])) {
-                error_log('Altcha verify - Missing required fields in payload');
-                return false;
             }
             
             // Verify the solution with checkExpires=true
             $result = $this->altcha->verifySolution($payload, true);
             
-            error_log('Altcha verify - Result: ' . ($result ? 'true' : 'false'));
-            
             return $result === true;
         } catch (\JsonException $e) {
-            error_log('Altcha verify - JsonException: ' . $e->getMessage());
             return false;
         } catch (\Exception $e) {
-            error_log('Altcha verify - Exception: ' . $e->getMessage() . ' | Trace: ' . $e->getTraceAsString());
             return false;
         }
     }
