@@ -156,8 +156,8 @@ Varables
     {# Get challenge data from customParameters #}
     {% set challengeData = field.customParameters.challenge|default(null) %}
 
-    {# Load Altcha widget script from local assets #}
-    <script src="{{ asset('plugins/MauticMultiCaptchaBundle/Assets/altcha.min.js') }}" type="module" async defer></script>
+    {# Load Altcha widget script from local assets with absolute URL for embedded forms #}
+    <script src="{{ absolute_url(asset('plugins/MauticMultiCaptchaBundle/Assets/altcha.min.js')) }}" type="module" async defer></script>
 
     {% if invisible %}
         {# Invisible mode: Hide label and widget by default, show only when needed #}
