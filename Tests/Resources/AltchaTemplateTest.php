@@ -186,18 +186,21 @@ class AltchaTemplateTest extends TestCase {
     }
 
     /**
-     * Unit test: Verify template contains hidden input field
+     * Unit test: Verify template contains altcha-widget with name attribute
+     * 
+     * The Altcha widget automatically creates its own hidden input field with the payload,
+     * so we don't need a separate hidden input in the template.
      * 
      * @test
      */
-    public function testTemplateContainsHiddenInput(): void {
+    public function testTemplateContainsWidgetWithName(): void {
         $templatePath = __DIR__ . '/../../Resources/views/Integration/altcha.html.twig';
         $content = file_get_contents($templatePath);
         
         $this->assertStringContainsString(
-            'type="hidden"',
+            'name="{{ inputAttributes.name }}"',
             $content,
-            'Template should contain hidden input field for payload'
+            'Template should configure altcha-widget with name attribute for automatic hidden input creation'
         );
     }
 
