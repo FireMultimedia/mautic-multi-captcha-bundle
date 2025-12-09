@@ -162,8 +162,8 @@ Varables
         </label>
     {% endif %}
 
-    {# Load Altcha widget script from CDN #}
-    <script src="https://cdn.jsdelivr.net/npm/altcha/dist/altcha.min.js" type="module" async defer></script>
+    {# Load Altcha widget script from local assets #}
+    <script src="{{ asset('plugins/MauticMultiCaptchaBundle/Assets/altcha.min.js') }}" type="module" async defer></script>
 
     <div {% for attrName, attrValue in containerAttributes %}{{ attrName }}="{% if attrValue is iterable %}{{ attrValue|join(' ') }}{% else %}{{ attrValue }}{% endif %}"{% endfor %}>
         {# Error message container #}
@@ -175,10 +175,10 @@ Varables
         <altcha-widget
             {% if challengeData %}challengejson="{{ challengeData|json_encode|e('html_attr') }}"{% endif %}
             {% if invisible %}hidefooter hidelogo{% endif %}
-            name="altcha"
+            name="{{ inputAttributes.name }}"
         ></altcha-widget>
 
-        {# Hidden input field for payload #}
+        {# Hidden input field for payload - will be populated by Altcha widget #}
         <input type="hidden"
                {% for attrName, attrValue in inputAttributes %}{{ attrName }}="{% if attrValue is iterable %}{{ attrValue|join(' ') }}{% else %}{{ attrValue }}{% endif %}"{% endfor %}>
     </div>
@@ -186,15 +186,30 @@ Varables
     {# Script to handle payload submission #}
     <script type="text/javascript">
         (function() {
-            const widget = document.querySelector('altcha-widget[name="altcha"]');
-            const hiddenInput = document.getElementById('{{ inputAttributes.id }}');
+            const widgetId = '{{ inputAttributes.id }}';
+            const widget = document.querySelector('altcha-widget[name="{{ inputAttributes.name }}"]');
+            const hiddenInput = document.getElementById(widgetId);
             
             if (widget && hiddenInput) {
+                // Listen for state changes
                 widget.addEventListener('statechange', function(event) {
-                    if (event.detail.state === 'verified') {
+                    if (event.detail.state === 'verified' && event.detail.payload) {
                         hiddenInput.value = event.detail.payload;
+                        console.log('Altcha verified, payload set');
+                    } else if (event.detail.state === 'error') {
+                        hiddenInput.value = '';
+                        console.error('Altcha verification error');
                     }
                 });
+                
+                // Also check if already verified (in case script loads after verification)
+                if (widget.getAttribute('data-state') === 'verified') {
+                    const altchaInput = widget.querySelector('input[name="{{ inputAttributes.name }}"]');
+                    if (altchaInput && altchaInput.value) {
+                        hiddenInput.value = altchaInput.value;
+                        console.log('Altcha already verified, payload copied');
+                    }
+                }
             }
         })();
     </script>
