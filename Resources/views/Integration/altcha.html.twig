@@ -204,12 +204,19 @@ Varables
             <span class="mauticform-errormsg" style="display: none;"></span>
         </div>
 
-        {# Altcha widget custom element - creates its own hidden input with the payload #}
-        <altcha-widget
-            {% if challengeData %}challengejson="{{ challengeData|json_encode|e('html_attr') }}"{% endif %}
-            {% if invisible %}auto="onload" hidefooter hidelogo{% endif %}
-            name="{{ inputAttributes.name }}"
-            id="{{ inputAttributes.id }}"
-        ></altcha-widget>
+        {% if inForm is defined and (true == inForm or inForm is not empty) %}
+            {# In backend form builder - show placeholder only, no active widget #}
+            <div style="padding: 10px; background: #f5f5f5; border: 1px dashed #ccc; text-align: center;">
+                Altcha Widget ({% if invisible %}invisible mode{% else %}visible mode{% endif %})
+            </div>
+        {% else %}
+            {# In frontend - show active Altcha widget #}
+            <altcha-widget
+                {% if challengeData %}challengejson="{{ challengeData|json_encode|e('html_attr') }}"{% endif %}
+                {% if invisible %}auto="onload" hidefooter hidelogo{% endif %}
+                name="{{ inputAttributes.name }}"
+                id="{{ inputAttributes.id }}"
+            ></altcha-widget>
+        {% endif %}
     </div>
 {% endblock %}
