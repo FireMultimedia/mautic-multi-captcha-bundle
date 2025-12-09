@@ -34,7 +34,6 @@ class AltchaTemplateTest extends TestCase {
 
         // Approved domains for script loading (GDPR-compliant)
         $approvedDomains = [
-            'cdn.jsdelivr.net',  // CDN for Altcha widget
             'localhost',          // Local development
             '',                   // Relative paths (local)
         ];
@@ -219,19 +218,29 @@ class AltchaTemplateTest extends TestCase {
     }
 
     /**
-     * Unit test: Verify template uses CDN for widget script
+     * Unit test: Verify template uses local asset for widget script
      * 
      * @test
      */
-    public function testTemplateUsesCDN(): void {
+    public function testTemplateUsesLocalAsset(): void {
         $templatePath = __DIR__ . '/../../Resources/views/Integration/altcha.html.twig';
         $content = file_get_contents($templatePath);
         
         $this->assertStringContainsString(
-            'cdn.jsdelivr.net/npm/altcha',
+            'plugins/MauticMultiCaptchaBundle/Assets/altcha.min.js',
             $content,
-            'Template should load Altcha widget from CDN'
+            'Template should load Altcha widget from local assets'
         );
+    }
+
+    /**
+     * Unit test: Verify local Altcha script file exists
+     * 
+     * @test
+     */
+    public function testLocalAltchaScriptExists(): void {
+        $scriptPath = __DIR__ . '/../../Assets/altcha.min.js';
+        $this->assertFileExists($scriptPath, 'Local Altcha script file should exist');
     }
 
     /**
