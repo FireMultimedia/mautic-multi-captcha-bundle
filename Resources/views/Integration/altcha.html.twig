@@ -194,10 +194,11 @@ Varables
                     workers="1"
                     blockspam="false"
                     spamfilter="false"
+                    verifyurl=""
                 ></altcha-widget>
             </div>
             
-            {# JavaScript to dynamically load challenge and configure widget #}
+            {# JavaScript to dynamically load challenge and prevent server requests #}
             <script>
                 (function() {
                     var widget = document.getElementById('{{ inputAttributes.id }}');
@@ -206,9 +207,17 @@ Varables
                         var maxNumber = widget.getAttribute('data-max-number') || 50000;
                         var expires = widget.getAttribute('data-expires') || 120;
                         
-                        // Configure widget to not make server requests
+                        // Configure widget to not make any server requests
                         widget.setAttribute('spamfilter', 'false');
                         widget.setAttribute('blockspam', 'false');
+                        widget.setAttribute('verifyurl', '');
+                        
+                        // Override any potential server verification
+                        widget.addEventListener('beforeverify', function(e) {
+                            e.preventDefault();
+                            // Skip server verification, mark as verified
+                            widget.setAttribute('state', 'verified');
+                        });
                         
                         fetch('/altcha/challenge?maxNumber=' + maxNumber + '&expires=' + expires)
                             .then(function(response) {
