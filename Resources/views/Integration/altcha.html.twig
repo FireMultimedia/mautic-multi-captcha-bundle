@@ -201,47 +201,37 @@ Varables
             {# JavaScript to dynamically load challenge and prevent server requests #}
             <script>
                 (function() {
-                    var widget = document.getElementById('{{ inputAttributes.id }}');
+                    var widgetId = '{{ inputAttributes.id }}';
+                    var widget = document.getElementById(widgetId);
                     if (widget) {
-                        // Load challenge from server
                         var maxNumber = widget.getAttribute('data-max-number') || 50000;
                         var expires = widget.getAttribute('data-expires') || 120;
                         
-                        // Configure widget to not make any server requests
                         widget.setAttribute('spamfilter', 'false');
                         widget.setAttribute('blockspam', 'false');
                         widget.setAttribute('verifyurl', '');
                         
-                        // Override any potential server verification
                         widget.addEventListener('beforeverify', function(e) {
                             e.preventDefault();
-                            // Skip server verification, mark as verified
                             widget.setAttribute('state', 'verified');
                         });
                         
                         fetch('/altcha/challenge?maxNumber=' + maxNumber + '&expires=' + expires)
                             .then(function(response) {
-                                if (!response.ok) {
-                                    throw new Error('Network response was not ok');
-                                }
                                 return response.json();
                             })
                             .then(function(data) {
                                 if (data.challenge) {
                                     widget.setAttribute('challengejson', JSON.stringify(data.challenge));
-                                } else {
-                                    console.error('No challenge data received');
                                 }
                             })
                             .catch(function(error) {
-                                console.error('Error loading Altcha challenge:', error);
-                                // Fallback: Let widget auto-generate challenge
+                                console.log('Altcha challenge load failed, using fallback');
                             });
                         
-                        // Listen for verification events
                         widget.addEventListener('statechange', function(e) {
                             if (e.detail.state === 'verified') {
-                                console.log('Altcha verified client-side');
+                                console.log('Altcha verified');
                             }
                         });
                     }
