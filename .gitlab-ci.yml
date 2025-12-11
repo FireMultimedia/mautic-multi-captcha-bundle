@@ -108,8 +108,7 @@ deploy-sandbox:
   script:
     # Extract package for deployment
     - cd package
-    - unzip -q MauticMultiCaptchaBundle-*.zip
-    
+        
     # Deploy to sandbox using rsync
     - |
       rsync -avz --delete \
@@ -119,11 +118,11 @@ deploy-sandbox:
         --exclude='composer.lock' \
         --exclude='vendor/' \
         MauticMultiCaptchaBundle/ \
-        $SANDBOX_USER@$DEPLOY_HOST:$SANDBOX_PATH/web/plugins/MauticMultiCaptchaBundle/
+        $SANDBOX_USER@$DEPLOY_HOST:web/plugins/MauticMultiCaptchaBundle/
     
     # Clear Mautic cache on sandbox
     - |
-      ssh $SANDBOX_USER@$DEPLOY_HOST "cd $SANDBOX_PATH && php bin/console cache:clear --env=prod --no-debug"
+      ssh $SANDBOX_USER@$DEPLOY_HOST "cd web && php bin/console cache:clear --env=prod --no-debug"
   
   environment:
     name: sandbox
@@ -155,7 +154,6 @@ deploy-live:
   script:
     # Extract package for deployment
     - cd package
-    - unzip -q MauticMultiCaptchaBundle-*.zip
     
     # Deploy to live using rsync
     - |
@@ -166,11 +164,11 @@ deploy-live:
         --exclude='composer.lock' \
         --exclude='vendor/' \
         MauticMultiCaptchaBundle/ \
-        $LIVE_USER@$DEPLOY_HOST:$LIVE_PATH/web/plugins/MauticMultiCaptchaBundle/
+        $LIVE_USER@$DEPLOY_HOST:web/plugins/MauticMultiCaptchaBundle/
     
     # Clear Mautic cache on live
     - |
-      ssh $LIVE_USER@$DEPLOY_HOST "cd $LIVE_PATH && php bin/console cache:clear --env=prod --no-debug"
+      ssh $LIVE_USER@$DEPLOY_HOST "cd web && php bin/console cache:clear --env=prod --no-debug"
   
   environment:
     name: production
