@@ -183,18 +183,47 @@ Varables
                 Altcha Widget ({% if invisible %}invisible mode{% else %}visible mode{% endif %})
             </div>
         {% else %}
-            {# In frontend - show active Altcha widget with fresh challenge #}
-            {% set challengeData = altcha_generate_challenge(maxNumber, expires) %}
+            {# In frontend - show active Altcha widget with dynamic challenge loading #}
             <div style="isolation: isolate;">
                 <altcha-widget
-                    {% if challengeData %}
-                        challengejson="{{ challengeData|json_encode|e('html_attr') }}"
-                    {% endif %}
                     {% if invisible %}auto="onload" hidefooter hidelogo{% endif %}
                     name="{{ inputAttributes.name }}"
                     id="{{ inputAttributes.id }}"
+                    data-max-number="{{ maxNumber }}"
+                    data-expires="{{ expires }}"
                 ></altcha-widget>
             </div>
+            
+            {# JavaScript to dynamically load challenge #}
+            <script>
+                (function() {
+                    var widget = document.getElementById('{{ inputAttributes.id }}');
+                    if (widget) {
+                        // Load challenge from server
+                        var maxNumber = widget.getAttribute('data-max-number') || 50000;
+                        var expires = widget.getAttribute('data-expires') || 120;
+                        
+                        fetch('{{ path('mautic_altcha_challenge') }}?maxNumber=' + maxNumber + '&expires=' + expires)
+                            .then(function(response) {
+                                if (!response.ok) {
+                                    throw new Error('Network response was not ok');
+                                }
+                                return response.json();
+                            })
+                            .then(function(data) {
+                                if (data.challenge) {
+                                    widget.setAttribute('challengejson', JSON.stringify(data.challenge));
+                                } else {
+                                    console.error('No challenge data received');
+                                }
+                            })
+                            .catch(function(error) {
+                                console.error('Error loading Altcha challenge:', error);
+                                // Fallback: Let widget auto-generate challenge
+                            });
+                    }
+                })();
+            </script>
         {% endif %}
     </div>
 {% endblock %}

@@ -16,7 +16,6 @@ use MauticPlugin\MauticMultiCaptchaBundle\Integration\RecaptchaIntegration;
 use MauticPlugin\MauticMultiCaptchaBundle\Integration\TurnstileIntegration;
 
 use MauticPlugin\MauticMultiCaptchaBundle\Controller\AltchaController;
-use MauticPlugin\MauticMultiCaptchaBundle\Twig\AltchaExtension;
 
 use Mautic\CoreBundle\Helper\AppVersion;
 
@@ -170,13 +169,7 @@ return [
                 ]
             ],
 
-            "mautic.altcha.twig.extension" => [
-                "class" => AltchaExtension::class,
-                "arguments" => [
-                    "mautic.altcha.service.altcha_client"
-                ],
-                "tags" => ["twig.extension"]
-            ]
+
         ],
 
         "integrations" => [
