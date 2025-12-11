@@ -156,16 +156,9 @@ Varables
     {# Get challenge data from customParameters #}
     {% set challengeData = field.customParameters.challenge|default(null) %}
 
-    {# Load Altcha handler and core script #}
+    {# Load Altcha script - simple approach #}
     {% if inForm is not defined or not inForm %}
-    <script src="{{ absolute_url(asset('plugins/MauticMultiCaptchaBundle/Assets/altcha-handler.js')) }}"></script>
-    <script>
-        if (window.MauticAltcha) {
-            window.MauticAltcha.loadScript('{{ absolute_url(asset('plugins/MauticMultiCaptchaBundle/Assets/altcha.min.js')) }}', function() {
-                window.MauticAltcha.initWidget('{{ inputAttributes.id }}', {{ invisible ? 'true' : 'false' }});
-            });
-        }
-    </script>
+    <script type="module" src="{{ absolute_url(asset('plugins/MauticMultiCaptchaBundle/Assets/altcha.min.js')) }}"></script>
     {% endif %}
 
 
