@@ -1,13 +1,16 @@
 <?php declare(strict_types=1);
 
+use MauticPlugin\MauticMultiCaptchaBundle\EventListener\AltchaFormSubscriber;
 use MauticPlugin\MauticMultiCaptchaBundle\EventListener\HcaptchaFormSubscriber;
 use MauticPlugin\MauticMultiCaptchaBundle\EventListener\RecaptchaFormSubscriber;
 use MauticPlugin\MauticMultiCaptchaBundle\EventListener\TurnstileFormSubscriber;
 
+use MauticPlugin\MauticMultiCaptchaBundle\Service\AltchaClient;
 use MauticPlugin\MauticMultiCaptchaBundle\Service\HcaptchaClient;
 use MauticPlugin\MauticMultiCaptchaBundle\Service\RecaptchaClient;
 use MauticPlugin\MauticMultiCaptchaBundle\Service\TurnstileClient;
 
+use MauticPlugin\MauticMultiCaptchaBundle\Integration\AltchaIntegration;
 use MauticPlugin\MauticMultiCaptchaBundle\Integration\HcaptchaIntegration;
 use MauticPlugin\MauticMultiCaptchaBundle\Integration\RecaptchaIntegration;
 use MauticPlugin\MauticMultiCaptchaBundle\Integration\TurnstileIntegration;
@@ -65,8 +68,8 @@ switch(true) {
 
 return [
     "name"        => "MultiCAPTCHA",
-    "description" => "Enables Google's reCAPTCHA, hCaptcha, and Cloudflare Turnstile integration for Mautic",
-    "version"     => "1.0.3",
+    "description" => "Enables Google's reCAPTCHA, hCaptcha, Cloudflare Turnstile, and Altcha integration for Mautic",
+    "version"     => "1.1.0",
     "author"      => "FireMultimedia B.V.",
 
     "routes" => [
@@ -75,6 +78,17 @@ return [
 
     "services" => [
         "events" => [
+            "mautic.altcha.event_listener.form_subscriber" => [
+                "class" => AltchaFormSubscriber::class,
+
+                "arguments" => [
+                    "event_dispatcher",
+                    "mautic.altcha.service.altcha_client",
+                    "mautic.lead.model.lead",
+                    "mautic.helper.integration"
+                ]
+            ],
+
             "mautic.hcaptcha.event_listener.form_subscriber" => [
                 "class" => HcaptchaFormSubscriber::class,
 
@@ -115,6 +129,14 @@ return [
         ],
 
         "others" => [
+            "mautic.altcha.service.altcha_client" => [
+                "class" => AltchaClient::class,
+
+                "arguments" => [
+                    "mautic.helper.integration"
+                ]
+            ],
+
             "mautic.hcaptcha.service.hcaptcha_client" => [
                 "class" => HcaptchaClient::class,
 
@@ -141,6 +163,11 @@ return [
         ],
 
         "integrations" => [
+            "mautic.integration.altcha" => [
+                "class"     => AltchaIntegration::class,
+                "arguments" => $defaultIntegrationArguments
+            ],
+
             "mautic.integration.hcaptcha" => [
                 "class"     => HcaptchaIntegration::class,
                 "arguments" => $defaultIntegrationArguments
