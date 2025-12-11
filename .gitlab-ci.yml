@@ -1,6 +1,8 @@
 stages:
   - test
   - package
+  - deploy-sandbox
+  - deploy-live
 
 variables:
   COMPOSER_CACHE_DIR: "$CI_PROJECT_DIR/.composer-cache"
@@ -85,3 +87,100 @@ package:
     - main
     - tags
     - develop
+
+# Deploy to Sandbox - automatic on main branch
+deploy-sandbox:
+  stage: deploy-sandbox
+  image: alpine:latest
+  tags:
+    - docker
+  needs:
+    - package
+  before_script:
+    - apk add --no-cache openssh-client rsync
+    # Setup SSH
+    - eval $(ssh-agent -s)
+    - echo "$DEPLOY_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan -H $DEPLOY_HOST >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+  script:
+    # Extract package for deployment
+    - cd package
+    - unzip -q MauticMultiCaptchaBundle-*.zip
+    
+    # Deploy to sandbox using rsync
+    - |
+      rsync -avz --delete \
+        --exclude='.git*' \
+        --exclude='Tests/' \
+        --exclude='phpunit.xml' \
+        --exclude='composer.lock' \
+        --exclude='vendor/' \
+        MauticMultiCaptchaBundle/ \
+        $SANDBOX_USER@$DEPLOY_HOST:$SANDBOX_PATH/web/plugins/MauticMultiCaptchaBundle/
+    
+    # Clear Mautic cache on sandbox
+    - |
+      ssh $SANDBOX_USER@$DEPLOY_HOST "cd $SANDBOX_PATH && php bin/console cache:clear --env=prod --no-debug"
+  
+  environment:
+    name: sandbox
+    url: https://$SANDBOX_HOST
+  
+  only:
+    - main
+  
+  variables:
+    GIT_STRATEGY: none
+
+# Deploy to Live - manual trigger only
+deploy-live:
+  stage: deploy-live
+  image: alpine:latest
+  tags:
+    - docker
+  needs:
+    - package
+  before_script:
+    - apk add --no-cache openssh-client rsync
+    # Setup SSH
+    - eval $(ssh-agent -s)
+    - echo "$DEPLOY_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan -H $DEPLOY_HOST >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+  script:
+    # Extract package for deployment
+    - cd package
+    - unzip -q MauticMultiCaptchaBundle-*.zip
+    
+    # Deploy to live using rsync
+    - |
+      rsync -avz --delete \
+        --exclude='.git*' \
+        --exclude='Tests/' \
+        --exclude='phpunit.xml' \
+        --exclude='composer.lock' \
+        --exclude='vendor/' \
+        MauticMultiCaptchaBundle/ \
+        $LIVE_USER@$DEPLOY_HOST:$LIVE_PATH/web/plugins/MauticMultiCaptchaBundle/
+    
+    # Clear Mautic cache on live
+    - |
+      ssh $LIVE_USER@$DEPLOY_HOST "cd $LIVE_PATH && php bin/console cache:clear --env=prod --no-debug"
+  
+  environment:
+    name: production
+    url: https://$LIVE_HOST
+  
+  when: manual
+  
+  only:
+    - main
+    - tags
+  
+  variables:
+    GIT_STRATEGY: none
