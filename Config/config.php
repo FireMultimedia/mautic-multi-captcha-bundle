@@ -171,7 +171,7 @@ return [
             ],
 
             "mautic.altcha.twig.extension" => [
-                "class" => \MauticPlugin\MauticMultiCaptchaBundle\Twig\AltchaExtension::class,
+                "class" => AltchaExtension::class,
                 "arguments" => [
                     "mautic.altcha.service.altcha_client"
                 ],
