@@ -20,62 +20,79 @@
      * @param {boolean} invisible - Whether the widget should be invisible initially
      */
     function initializeAltchaWidget(widgetId, invisible) {
-        var widget = document.getElementById(widgetId);
-        
-        if (!widget) {
-            console.warn('Altcha widget not found:', widgetId);
-            return;
+        function tryInitialize() {
+            var widget = document.getElementById(widgetId);
+            
+            if (!widget) {
+                console.warn('Altcha widget not found, retrying...:', widgetId);
+                // Retry after a short delay
+                setTimeout(tryInitialize, 100);
+                return;
+            }
+            
+            console.log('Initializing Altcha widget:', widgetId);
+            setupWidget(widget, invisible);
         }
         
-        // Prevent the widget from triggering jQuery events that cause infinite loops
-        widget.addEventListener('statechange', function(ev) {
-            console.log('Altcha state:', ev.detail);
-            // Stop event propagation to prevent jQuery from catching it
-            if (ev.stopPropagation) ev.stopPropagation();
-            if (ev.stopImmediatePropagation) ev.stopImmediatePropagation();
-            
-            // Handle invisible mode visibility
-            if (invisible && ev.detail) {
-                if (ev.detail.state === 'code' || ev.detail.state === 'unverified') {
-                    widget.style.display = 'block';
-                    var label = document.querySelector('label[for="' + widgetId + '"]');
-                    if (label) label.style.display = 'block';
+        function setupWidget(widget, invisible) {
+        
+            // Prevent the widget from triggering jQuery events that cause infinite loops
+            widget.addEventListener('statechange', function(ev) {
+                console.log('Altcha state:', ev.detail);
+                // Stop event propagation to prevent jQuery from catching it
+                if (ev.stopPropagation) ev.stopPropagation();
+                if (ev.stopImmediatePropagation) ev.stopImmediatePropagation();
+                
+                // Handle invisible mode visibility
+                if (invisible && ev.detail) {
+                    if (ev.detail.state === 'code' || ev.detail.state === 'unverified') {
+                        widget.style.display = 'block';
+                        var label = document.querySelector('label[for="' + widget.id + '"]');
+                        if (label) label.style.display = 'block';
+                    }
                 }
-            }
-        }, true);
-        
-        widget.addEventListener('verified', function(ev) {
-            console.log('Altcha verified:', ev.detail);
-            if (ev.stopPropagation) ev.stopPropagation();
-            if (ev.stopImmediatePropagation) ev.stopImmediatePropagation();
-        }, true);
-        
-        widget.addEventListener('error', function(ev) {
-            console.error('Altcha error:', ev.detail);
-            if (ev.stopPropagation) ev.stopPropagation();
-            if (ev.stopImmediatePropagation) ev.stopImmediatePropagation();
-        }, true);
-        
-        // Prevent all events from the widget from bubbling to jQuery
-        ['change', 'input', 'submit', 'click'].forEach(function(eventType) {
-            widget.addEventListener(eventType, function(ev) {
+            }, true);
+            
+            widget.addEventListener('verified', function(ev) {
+                console.log('Altcha verified:', ev.detail);
                 if (ev.stopPropagation) ev.stopPropagation();
                 if (ev.stopImmediatePropagation) ev.stopImmediatePropagation();
             }, true);
-        });
-        
-        // Also prevent events from the widget's shadow DOM
-        if (widget.shadowRoot) {
-            widget.shadowRoot.addEventListener('change', function(ev) {
+            
+            widget.addEventListener('error', function(ev) {
+                console.error('Altcha error:', ev.detail);
                 if (ev.stopPropagation) ev.stopPropagation();
+                if (ev.stopImmediatePropagation) ev.stopImmediatePropagation();
             }, true);
+            
+            // Prevent all events from the widget from bubbling to jQuery
+            ['change', 'input', 'submit', 'click'].forEach(function(eventType) {
+                widget.addEventListener(eventType, function(ev) {
+                    if (ev.stopPropagation) ev.stopPropagation();
+                    if (ev.stopImmediatePropagation) ev.stopImmediatePropagation();
+                }, true);
+            });
+            
+            // Also prevent events from the widget's shadow DOM
+            if (widget.shadowRoot) {
+                widget.shadowRoot.addEventListener('change', function(ev) {
+                    if (ev.stopPropagation) ev.stopPropagation();
+                }, true);
+            }
+            
+            // Handle invisible mode initial state
+            if (invisible) {
+                widget.style.display = 'none';
+                var label = document.querySelector('label[for="' + widget.id + '"]');
+                if (label) label.style.display = 'none';
+            }
         }
         
-        // Handle invisible mode initial state
-        if (invisible) {
-            widget.style.display = 'none';
-            var label = document.querySelector('label[for="' + widgetId + '"]');
-            if (label) label.style.display = 'none';
+        // Start the initialization process
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', tryInitialize);
+        } else {
+            tryInitialize();
         }
     }
     
@@ -85,8 +102,14 @@
      * @param {Function} callback - Callback function to execute after script loads
      */
     function loadAltchaScript(scriptUrl, callback) {
+        console.log('Loading Altcha script:', scriptUrl);
+        
         if (window.altchaLoaded) {
-            if (callback) callback();
+            console.log('Altcha script already loaded');
+            if (callback) {
+                // Wait a bit to ensure the custom elements are registered
+                setTimeout(callback, 100);
+            }
             return;
         }
         
@@ -96,7 +119,11 @@
         script.type = 'module';
         script.crossOrigin = 'anonymous';
         script.onload = function() {
-            if (callback) callback();
+            console.log('Altcha script loaded successfully');
+            // Wait for custom elements to be registered
+            setTimeout(function() {
+                if (callback) callback();
+            }, 200);
         };
         script.onerror = function() {
             console.error('Failed to load Altcha script:', scriptUrl);
