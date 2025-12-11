@@ -153,9 +153,6 @@ Varables
     {% set expires = field.properties.expires|default(120) %}
     {% set invisible = field.properties.invisible|default(false) %}
 
-    {# Get challenge data from customParameters #}
-    {% set challengeData = field.customParameters.challenge|default(null) %}
-
     {# Load Altcha script via JavaScript to preserve type="module" #}
     {% if inForm is not defined or not inForm %}
     <script>
@@ -167,8 +164,6 @@ Varables
         })();
     </script>
     {% endif %}
-
-
 
     {% if field.showLabel %}
         <label {% for attrName, attrValue in labelAttributes %}{{ attrName }}="{% if attrValue is iterable %}{{ attrValue|join(' ') }}{% else %}{{ attrValue }}{% endif %}"{% endfor %}{% if invisible %} style="display: none;"{% endif %}>
@@ -188,22 +183,18 @@ Varables
                 Altcha Widget ({% if invisible %}invisible mode{% else %}visible mode{% endif %})
             </div>
         {% else %}
-            {# In frontend - show active Altcha widget #}
-            {# Wrap widget in a container to isolate it from jQuery event bubbling #}
+            {# In frontend - show active Altcha widget with fresh challenge #}
+            {% set challengeData = altcha_generate_challenge(maxNumber, expires) %}
             <div style="isolation: isolate;">
                 <altcha-widget
                     {% if challengeData %}
                         challengejson="{{ challengeData|json_encode|e('html_attr') }}"
-                    {% else %}
-                        {# Fallback: If no challenge data, widget will auto-generate #}
                     {% endif %}
                     {% if invisible %}auto="onload" hidefooter hidelogo{% endif %}
                     name="{{ inputAttributes.name }}"
                     id="{{ inputAttributes.id }}"
                 ></altcha-widget>
             </div>
-            
-
         {% endif %}
     </div>
 {% endblock %}

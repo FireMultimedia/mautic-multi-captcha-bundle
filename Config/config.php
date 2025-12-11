@@ -15,6 +15,9 @@ use MauticPlugin\MauticMultiCaptchaBundle\Integration\HcaptchaIntegration;
 use MauticPlugin\MauticMultiCaptchaBundle\Integration\RecaptchaIntegration;
 use MauticPlugin\MauticMultiCaptchaBundle\Integration\TurnstileIntegration;
 
+use MauticPlugin\MauticMultiCaptchaBundle\Controller\AltchaController;
+use MauticPlugin\MauticMultiCaptchaBundle\Twig\AltchaExtension;
+
 use Mautic\CoreBundle\Helper\AppVersion;
 
 // assume that Mautic developers use sane versioning
@@ -73,7 +76,13 @@ return [
     "author"      => "FireMultimedia B.V.",
 
     "routes" => [
-
+        "public" => [
+            "mautic_altcha_challenge" => [
+                "path"       => "/altcha/challenge",
+                "controller" => "MauticPlugin\MauticMultiCaptchaBundle\Controller\AltchaController::generateChallengeAction",
+                "method"     => "GET"
+            ]
+        ]
     ],
 
     "services" => [
@@ -159,6 +168,14 @@ return [
                 "arguments" => [
                     "mautic.helper.integration"
                 ]
+            ],
+
+            "mautic.altcha.twig.extension" => [
+                "class" => \MauticPlugin\MauticMultiCaptchaBundle\Twig\AltchaExtension::class,
+                "arguments" => [
+                    "mautic.altcha.service.altcha_client"
+                ],
+                "tags" => ["twig.extension"]
             ]
         ],
 

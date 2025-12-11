@@ -90,14 +90,10 @@ class AltchaFormSubscriber implements EventSubscriberInterface {
         if(!$this->isConfigured)
             return;
 
-        // Generate challenge for the form
-        $challenge = $this->altchaClient->createChallenge(50000, 120);
-
         $event->addFormField("plugin.altcha", [
             "label"    => "strings.altcha.plugin.name",
             "formType" => AltchaType::class,
             "template" => "@MauticMultiCaptcha/Integration/altcha.html.twig",
-            "challenge" => $challenge,
 
             "builderOptions" => [
                 "addLeadFieldList" => false,
