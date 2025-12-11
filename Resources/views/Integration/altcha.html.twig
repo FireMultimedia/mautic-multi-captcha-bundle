@@ -203,7 +203,7 @@ Varables
                         var maxNumber = widget.getAttribute('data-max-number') || 50000;
                         var expires = widget.getAttribute('data-expires') || 120;
                         
-                        fetch('{{ path('mautic_altcha_challenge') }}?maxNumber=' + maxNumber + '&expires=' + expires)
+                        fetch('/altcha/challenge?maxNumber=' + maxNumber + '&expires=' + expires)
                             .then(function(response) {
                                 if (!response.ok) {
                                     throw new Error('Network response was not ok');
