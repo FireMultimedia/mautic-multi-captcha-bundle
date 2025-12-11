@@ -156,52 +156,19 @@ Varables
     {# Get challenge data from customParameters #}
     {% set challengeData = field.customParameters.challenge|default(null) %}
 
-    {# Load Altcha widget script from local assets with absolute URL for embedded forms #}
-    {# Only load script once per page, even if multiple forms are present #}
-    {# Use inline check to prevent duplicate loading and crossorigin for CORS support #}
+    {# Load Altcha handler and core script #}
+    {% if inForm is not defined or not inForm %}
+    <script src="{{ absolute_url(asset('plugins/MauticMultiCaptchaBundle/Assets/altcha-handler.js')) }}"></script>
     <script>
-        if (!window.altchaLoaded) {
-            window.altchaLoaded = true;
-            var script = document.createElement('script');
-            script.src = '{{ absolute_url(asset('plugins/MauticMultiCaptchaBundle/Assets/altcha.min.js')) }}';
-            script.type = 'module';
-            script.crossOrigin = 'anonymous';
-            document.head.appendChild(script);
+        if (window.MauticAltcha) {
+            window.MauticAltcha.loadScript('{{ absolute_url(asset('plugins/MauticMultiCaptchaBundle/Assets/altcha.min.js')) }}', function() {
+                window.MauticAltcha.initWidget('{{ inputAttributes.id }}', {{ invisible ? 'true' : 'false' }});
+            });
         }
     </script>
-
-    {% if invisible %}
-        {# Invisible mode: Hide label and widget by default, show only when needed #}
-        <script>
-            (function() {
-                var widgetId = '{{ inputAttributes.id }}';
-                var containerId = '{{ containerAttributes.id }}';
-                var labelId = '{{ labelAttributes.id }}';
-                
-                document.addEventListener('DOMContentLoaded', function() {
-                    var widget = document.getElementById(widgetId);
-                    var container = document.getElementById(containerId);
-                    var label = document.getElementById(labelId);
-                    
-                    if (widget) {
-                        // Initially hide the widget
-                        widget.style.display = 'none';
-                        
-                        // Listen to state changes
-                        widget.addEventListener('statechange', function(ev) {
-                            if (ev.detail) {
-                                // Show widget if code challenge is required or verification failed
-                                if (ev.detail.state === 'code' || ev.detail.state === 'unverified') {
-                                    widget.style.display = 'block';
-                                    if (label) label.style.display = 'block';
-                                }
-                            }
-                        });
-                    }
-                });
-            })();
-        </script>
     {% endif %}
+
+
 
     {% if field.showLabel %}
         <label {% for attrName, attrValue in labelAttributes %}{{ attrName }}="{% if attrValue is iterable %}{{ attrValue|join(' ') }}{% else %}{{ attrValue }}{% endif %}"{% endfor %}{% if invisible %} style="display: none;"{% endif %}>
@@ -236,50 +203,7 @@ Varables
                 ></altcha-widget>
             </div>
             
-            {# Add verification debugging and prevent event bubbling issues #}
-            <script>
-                (function() {
-                    var widgetId = '{{ inputAttributes.id }}';
-                    var widget = document.getElementById(widgetId);
-                    
-                    if (widget) {
-                        // Prevent the widget from triggering jQuery events that cause infinite loops
-                        widget.addEventListener('statechange', function(ev) {
-                            console.log('Altcha state:', ev.detail);
-                            // Stop event propagation to prevent jQuery from catching it
-                            if (ev.stopPropagation) ev.stopPropagation();
-                            if (ev.stopImmediatePropagation) ev.stopImmediatePropagation();
-                        }, true);
-                        
-                        widget.addEventListener('verified', function(ev) {
-                            console.log('Altcha verified:', ev.detail);
-                            if (ev.stopPropagation) ev.stopPropagation();
-                            if (ev.stopImmediatePropagation) ev.stopImmediatePropagation();
-                        }, true);
-                        
-                        widget.addEventListener('error', function(ev) {
-                            console.error('Altcha error:', ev.detail);
-                            if (ev.stopPropagation) ev.stopPropagation();
-                            if (ev.stopImmediatePropagation) ev.stopImmediatePropagation();
-                        }, true);
-                        
-                        // Prevent all events from the widget from bubbling to jQuery
-                        ['change', 'input', 'submit', 'click'].forEach(function(eventType) {
-                            widget.addEventListener(eventType, function(ev) {
-                                if (ev.stopPropagation) ev.stopPropagation();
-                                if (ev.stopImmediatePropagation) ev.stopImmediatePropagation();
-                            }, true);
-                        });
-                        
-                        // Also prevent events from the widget's shadow DOM
-                        if (widget.shadowRoot) {
-                            widget.shadowRoot.addEventListener('change', function(ev) {
-                                if (ev.stopPropagation) ev.stopPropagation();
-                            }, true);
-                        }
-                    }
-                })();
-            </script>
+
         {% endif %}
     </div>
 {% endblock %}
