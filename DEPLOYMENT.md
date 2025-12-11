@@ -13,7 +13,7 @@ Die Pipeline besteht aus 4 Stages:
 
 ### Deployment-Host und Authentifizierung
 - `DEPLOY_HOST` - Hostname/IP des Servers (gleich für Sandbox und Live)
-- `DEPLOY_PRIVATE_KEY` - SSH Private Key für Authentifizierung
+- `DEPLOY_PRIVATE_KEY` - SSH Private Key für Authentifizierung (base64-kodiert mit `base64 -w0`)
 
 ### Sandbox-Konfiguration
 - `SANDBOX_USER` - SSH-Benutzername für Sandbox
@@ -54,7 +54,11 @@ Die Pipeline besteht aus 4 Stages:
    cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
    ```
 
-3. Füge den Private Key als GitLab CI/CD Variable `DEPLOY_PRIVATE_KEY` hinzu
+3. Kodiere den Private Key mit base64 und füge ihn als GitLab CI/CD Variable hinzu:
+   ```bash
+   base64 -w0 ~/.ssh/id_rsa
+   ```
+   Kopiere die Ausgabe und füge sie als `DEPLOY_PRIVATE_KEY` Variable hinzu
 
 ## Ausgeschlossene Dateien
 
