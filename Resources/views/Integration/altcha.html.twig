@@ -191,10 +191,13 @@ Varables
                     id="{{ inputAttributes.id }}"
                     data-max-number="{{ maxNumber }}"
                     data-expires="{{ expires }}"
+                    workers="1"
+                    blockspam="false"
+                    spamfilter="false"
                 ></altcha-widget>
             </div>
             
-            {# JavaScript to dynamically load challenge #}
+            {# JavaScript to dynamically load challenge and configure widget #}
             <script>
                 (function() {
                     var widget = document.getElementById('{{ inputAttributes.id }}');
@@ -202,6 +205,10 @@ Varables
                         // Load challenge from server
                         var maxNumber = widget.getAttribute('data-max-number') || 50000;
                         var expires = widget.getAttribute('data-expires') || 120;
+                        
+                        // Configure widget to not make server requests
+                        widget.setAttribute('spamfilter', 'false');
+                        widget.setAttribute('blockspam', 'false');
                         
                         fetch('/altcha/challenge?maxNumber=' + maxNumber + '&expires=' + expires)
                             .then(function(response) {
@@ -221,6 +228,13 @@ Varables
                                 console.error('Error loading Altcha challenge:', error);
                                 // Fallback: Let widget auto-generate challenge
                             });
+                        
+                        // Listen for verification events
+                        widget.addEventListener('statechange', function(e) {
+                            if (e.detail.state === 'verified') {
+                                console.log('Altcha verified client-side');
+                            }
+                        });
                     }
                 })();
             </script>
