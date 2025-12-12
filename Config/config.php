@@ -80,7 +80,7 @@ return [
         "public" => [
             "mautic_altcha_api_challenge" => [
                 "path"       => "/altcha/api/challenge",
-                "controller" => "mautic.altcha.controller.api:generateChallengeAction",
+                "controller" => AltchaApiController::class . "::generateChallengeAction",
                 "method"     => "GET"
             ]
         ]
@@ -138,6 +138,12 @@ return [
 
         ],
 
+        "controllers" => [
+            "mautic.altcha.controller.api" => [
+                "class" => AltchaApiController::class
+            ]
+        ],
+
         "others" => [
             "mautic.altcha.service.altcha_client" => [
                 "class" => AltchaClient::class,
@@ -168,14 +174,6 @@ return [
 
                 "arguments" => [
                     "mautic.helper.integration"
-                ]
-            ],
-
-            "mautic.altcha.controller.api" => [
-                "class" => AltchaApiController::class,
-
-                "arguments" => [
-                    "mautic.altcha.service.altcha_client"
                 ]
             ]
         ],

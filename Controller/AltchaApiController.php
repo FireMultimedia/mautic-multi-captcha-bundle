@@ -20,12 +20,6 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class AltchaApiController extends CommonController
 {
-    private AltchaClient $altchaClient;
-
-    public function __construct(AltchaClient $altchaClient)
-    {
-        $this->altchaClient = $altchaClient;
-    }
 
     /**
      * <h2>generateChallengeAction</h2>
@@ -44,8 +38,11 @@ class AltchaApiController extends CommonController
             $maxNumber = 100000;  // Default difficulty
             $expires = 300;       // 5 minutes default expiry
             
+            // Get AltchaClient service from container
+            $altchaClient = $this->container->get('mautic.altcha.service.altcha_client');
+            
             // Generate challenge
-            $challengeData = $this->altchaClient->createChallenge($maxNumber, $expires);
+            $challengeData = $altchaClient->createChallenge($maxNumber, $expires);
             
             if (empty($challengeData)) {
                 return new JsonResponse([
