@@ -42,7 +42,7 @@ class AltchaApiController
         try {
             // Use secure default values - no user input accepted for security
             $maxNumber = 100000;  // Default difficulty
-            $expires = 300;       // 5 minutes default expiry
+            $expires = 60;       // 1 minute default expiry
             
             // Generate challenge
             $challengeData = $this->altchaClient->createChallenge($maxNumber, $expires);
