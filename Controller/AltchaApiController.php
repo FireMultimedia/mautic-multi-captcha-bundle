@@ -3,7 +3,6 @@
 namespace MauticPlugin\MauticMultiCaptchaBundle\Controller;
 
 use MauticPlugin\MauticMultiCaptchaBundle\Service\AltchaClient;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -11,14 +10,15 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * <h1>Class AltchaApiController</h1>
  * 
- * API Controller for ALTCHA challenge generation
+ * Simple API Controller for ALTCHA challenge generation
+ * No inheritance to avoid Mautic/Symfony DI conflicts
  *
  * @package MauticPlugin\MauticMultiCaptchaBundle\Controller
  *
  * @authors see: composer.json
  * @license GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
  */
-class AltchaApiController extends AbstractController
+class AltchaApiController
 {
     private AltchaClient $altchaClient;
 

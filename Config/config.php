@@ -80,7 +80,7 @@ return [
         "public" => [
             "mautic_altcha_api_challenge" => [
                 "path"       => "/altcha/api/challenge",
-                "controller" => AltchaApiController::class . "::generateChallengeAction",
+                "controller" => "mautic.altcha.controller.api:generateChallengeAction",
                 "method"     => "GET"
             ]
         ]
