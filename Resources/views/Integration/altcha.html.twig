@@ -183,24 +183,20 @@ Varables
                 Altcha Widget ({% if invisible %}invisible mode{% else %}visible mode{% endif %})
             </div>
         {% else %}
-            {# In frontend - show active Altcha widget with server-generated challenge #}
-            {% set challengeData = altcha_generate_challenge() %}
-            {# Caching verhindern #}
-            {% set currentTime = 'now'|date('U') %}
-            {% set uniqueFormId = 'altcha_' ~ currentTime ~ '_' ~ random() %}   
-            {% set formCacheDisabled = true %}      
-            <div style="isolation: isolate;" class="mauticform-inner" id="{{ uniqueFormId }}" data-cache="disabled">
+            {# In frontend - show active Altcha widget with challengeurl for dynamic loading #}
+            
+            <div style="isolation: isolate;" class="mauticform-inner">
                 <altcha-widget
                     {% if invisible %}auto="onload" hidefooter hidelogo{% endif %}
-                    {% if challengeData %}
-                        challengejson="{{ challengeData|json_encode|e('html_attr') }}"
-                    {% endif %}
+                    challengeurl="{{ path('mautic_altcha_api_challenge') }}"
                     name="{{ inputAttributes.name }}"
                     id="{{ inputAttributes.id }}"
                     workers="1"
                     blockspam="false"
                     spamfilter="false"
                     verifyurl=""
+                    refetchonexpire="true"
+                    expire="300000"
                 ></altcha-widget>
             </div>
         {% endif %}

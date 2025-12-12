@@ -76,6 +76,21 @@ Für Live-Deployments:
 2. Wähle die gewünschte Pipeline
 3. Klicke auf "Play" bei der `deploy-live` Stage
 
+## Neue Features in Version 1.1.0
+
+### ALTCHA API-Endpunkt
+- **Neuer Endpunkt**: `/altcha/api/challenge`
+- **Zweck**: Löst das Caching-Problem von ALTCHA-Challenges in Mautic-Formularen
+- **Funktionalität**: Generiert dynamisch frische ALTCHA-Challenges als JSON
+- **Parameter**:
+  - `maxNumber` (optional): Maximale Zahl für Challenge (1000-1000000, Standard: 100000)
+  - `expires` (optional): Gültigkeitsdauer in Sekunden (10-3600, Standard: 300)
+
+### Template-Updates
+- ALTCHA-Template nutzt jetzt JavaScript-basierte Challenge-Generierung
+- Fallback auf Server-seitige Generierung bei API-Fehlern
+- Verbesserte Cache-Vermeidung durch dynamische Widget-IDs
+
 ## Troubleshooting
 
 ### SSH-Verbindungsprobleme
@@ -91,3 +106,9 @@ Für Live-Deployments:
 - Prüfe PHP-CLI-Verfügbarkeit auf dem Server
 - Prüfe Mautic-Pfad-Konfiguration
 - Prüfe Dateiberechtigungen im Mautic-Verzeichnis
+
+### ALTCHA API-Probleme
+- Prüfe ob ALTCHA-Integration konfiguriert ist (HMAC-Key)
+- Prüfe Browser-Konsole auf JavaScript-Fehler
+- Teste API-Endpunkt direkt: `GET /altcha/api/challenge`
+- Bei 503-Fehlern: ALTCHA-Konfiguration prüfen

@@ -102,6 +102,34 @@ Altcha is designed with privacy in mind and offers significant advantages for GD
 
 This makes Altcha an ideal choice for organizations that need to comply with strict data protection regulations while still protecting their forms from spam and abuse.
 
+#### API Endpoint
+
+The plugin provides a REST API endpoint for dynamic challenge generation, which solves caching issues in Mautic forms:
+
+**Endpoint**: `GET /altcha/api/challenge`
+
+**Parameters**: None (uses secure default values)
+- `maxNumber`: 100000 (fixed for security)
+- `expires`: 300 seconds (fixed for security)
+
+**Example Request**:
+```bash
+curl "https://your-mautic.com/altcha/api/challenge"
+```
+
+**Example Response**:
+```json
+{
+    "algorithm": "SHA-256",
+    "challenge": "abc123...",
+    "maxnumber": 50000,
+    "salt": "def456...",
+    "signature": "ghi789..."
+}
+```
+
+This API endpoint is automatically used by the Altcha widget via the `challengeurl` attribute to ensure fresh challenges are generated for each form load, preventing caching issues. The widget handles all the complexity internally - no custom JavaScript required.
+
 
 ## Usage in Mautic Form
 ### hCaptcha

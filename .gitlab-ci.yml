@@ -55,6 +55,7 @@ package:
     # Copy production files only
     - cp -r Assets package/MauticMultiCaptchaBundle/
     - cp -r Config package/MauticMultiCaptchaBundle/
+    - cp -r Controller package/MauticMultiCaptchaBundle/
     - cp -r DependencyInjection package/MauticMultiCaptchaBundle/
     - cp -r EventListener package/MauticMultiCaptchaBundle/
     - cp -r Form package/MauticMultiCaptchaBundle/

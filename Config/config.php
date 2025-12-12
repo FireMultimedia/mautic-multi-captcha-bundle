@@ -15,6 +15,8 @@ use MauticPlugin\MauticMultiCaptchaBundle\Integration\HcaptchaIntegration;
 use MauticPlugin\MauticMultiCaptchaBundle\Integration\RecaptchaIntegration;
 use MauticPlugin\MauticMultiCaptchaBundle\Integration\TurnstileIntegration;
 
+use MauticPlugin\MauticMultiCaptchaBundle\Controller\AltchaApiController;
+
 
 
 use Mautic\CoreBundle\Helper\AppVersion;
@@ -71,10 +73,17 @@ switch(true) {
 return [
     "name"        => "MultiCAPTCHA",
     "description" => "Enables Google's reCAPTCHA, hCaptcha, Cloudflare Turnstile, and Altcha integration for Mautic",
-    "version"     => "1.1.0",
+    "version"     => "1.1.1",
     "author"      => "FireMultimedia B.V.",
 
     "routes" => [
+        "public" => [
+            "mautic_altcha_api_challenge" => [
+                "path"       => "/altcha/api/challenge",
+                "controller" => "MauticMultiCaptchaBundle:AltchaApi:generateChallenge",
+                "method"     => "GET"
+            ]
+        ]
     ],
 
     "services" => [
@@ -159,6 +168,14 @@ return [
 
                 "arguments" => [
                     "mautic.helper.integration"
+                ]
+            ],
+
+            "mautic.altcha.controller.api" => [
+                "class" => AltchaApiController::class,
+
+                "arguments" => [
+                    "mautic.altcha.service.altcha_client"
                 ]
             ]
         ],
