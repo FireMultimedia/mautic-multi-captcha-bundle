@@ -2,8 +2,8 @@
 
 namespace MauticPlugin\MauticMultiCaptchaBundle\Controller;
 
-use Mautic\CoreBundle\Controller\CommonController;
 use MauticPlugin\MauticMultiCaptchaBundle\Service\AltchaClient;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -18,8 +18,14 @@ use Symfony\Component\HttpFoundation\Response;
  * @authors see: composer.json
  * @license GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
  */
-class AltchaApiController extends CommonController
+class AltchaApiController extends AbstractController
 {
+    private AltchaClient $altchaClient;
+
+    public function __construct(AltchaClient $altchaClient)
+    {
+        $this->altchaClient = $altchaClient;
+    }
 
     /**
      * <h2>generateChallengeAction</h2>
@@ -38,11 +44,8 @@ class AltchaApiController extends CommonController
             $maxNumber = 100000;  // Default difficulty
             $expires = 300;       // 5 minutes default expiry
             
-            // Get AltchaClient service from container
-            $altchaClient = $this->container->get('mautic.altcha.service.altcha_client');
-            
             // Generate challenge
-            $challengeData = $altchaClient->createChallenge($maxNumber, $expires);
+            $challengeData = $this->altchaClient->createChallenge($maxNumber, $expires);
             
             if (empty($challengeData)) {
                 return new JsonResponse([

@@ -140,7 +140,10 @@ return [
 
         "controllers" => [
             "mautic.altcha.controller.api" => [
-                "class" => AltchaApiController::class
+                "class" => AltchaApiController::class,
+                "arguments" => [
+                    "mautic.altcha.service.altcha_client"
+                ]
             ]
         ],
 
