@@ -185,6 +185,7 @@ Varables
         {% else %}
             {# In frontend - show active Altcha widget with server-generated challenge #}
             {% set challengeData = altcha_generate_challenge() %}
+            {% set cacheBuster = 'altcha_' ~ constant('time') %}
             <div style="isolation: isolate;">
                 <altcha-widget
                     {% if invisible %}auto="onload" hidefooter hidelogo{% endif %}
@@ -192,7 +193,7 @@ Varables
                         challengejson="{{ challengeData|json_encode|e('html_attr') }}"
                     {% endif %}
                     name="{{ inputAttributes.name }}"
-                    id="{{ inputAttributes.id }}"
+                    id="{{ cacheBuster }}"
                     workers="1"
                     blockspam="false"
                     spamfilter="false"
