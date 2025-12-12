@@ -185,8 +185,9 @@ Varables
         {% else %}
             {# In frontend - show active Altcha widget with server-generated challenge #}
             {% set challengeData = altcha_generate_challenge() %}
-            {% set cacheBuster = 'altcha_' ~ constant('time') %}
-            <div style="isolation: isolate;">
+            {% set cacheBuster = 'altcha_' ~ constant('time')  ~ '_' ~ random() %}
+         
+            <div style="isolation: isolate;" class="mauticform-inner" id="{{ uniqueFormId }}">
                 <altcha-widget
                     {% if invisible %}auto="onload" hidefooter hidelogo{% endif %}
                     {% if challengeData %}
