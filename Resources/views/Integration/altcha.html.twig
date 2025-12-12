@@ -188,7 +188,7 @@ Varables
             <div style="isolation: isolate;" class="mauticform-inner">
                 <altcha-widget
                     {% if invisible %}auto="onload" hidefooter hidelogo{% endif %}
-                    challengeurl="{{ path('mautic_altcha_api_challenge') }}"
+                    challengeurl="{{ absolute_url(path('mautic_altcha_api_challenge')) }}"
                     name="{{ inputAttributes.name }}"
                     id="{{ inputAttributes.id }}"
                     workers="1"
