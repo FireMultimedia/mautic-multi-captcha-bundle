@@ -183,60 +183,22 @@ Varables
                 Altcha Widget ({% if invisible %}invisible mode{% else %}visible mode{% endif %})
             </div>
         {% else %}
-            {# In frontend - show active Altcha widget with dynamic challenge loading #}
+            {# In frontend - show active Altcha widget with server-generated challenge #}
+            {% set challengeData = altcha_generate_challenge() %}
             <div style="isolation: isolate;">
                 <altcha-widget
                     {% if invisible %}auto="onload" hidefooter hidelogo{% endif %}
+                    {% if challengeData %}
+                        challengejson="{{ challengeData|json_encode|e('html_attr') }}"
+                    {% endif %}
                     name="{{ inputAttributes.name }}"
                     id="{{ inputAttributes.id }}"
-                    data-max-number="{{ maxNumber }}"
-                    data-expires="{{ expires }}"
                     workers="1"
                     blockspam="false"
                     spamfilter="false"
                     verifyurl=""
                 ></altcha-widget>
             </div>
-            
-            {# JavaScript to dynamically load challenge and prevent server requests #}
-            <script>
-                (function() {
-                    var widgetId = '{{ inputAttributes.id }}';
-                    var widget = document.getElementById(widgetId);
-                    if (widget) {
-                        var maxNumber = widget.getAttribute('data-max-number') || 50000;
-                        var expires = widget.getAttribute('data-expires') || 120;
-                        
-                        widget.setAttribute('spamfilter', 'false');
-                        widget.setAttribute('blockspam', 'false');
-                        widget.setAttribute('verifyurl', '');
-                        
-                        widget.addEventListener('beforeverify', function(e) {
-                            e.preventDefault();
-                            widget.setAttribute('state', 'verified');
-                        });
-                        
-                        fetch('/altcha/challenge?maxNumber=' + maxNumber + '&expires=' + expires)
-                            .then(function(response) {
-                                return response.json();
-                            })
-                            .then(function(data) {
-                                if (data.challenge) {
-                                    widget.setAttribute('challengejson', JSON.stringify(data.challenge));
-                                }
-                            })
-                            .catch(function(error) {
-                                console.log('Altcha challenge load failed, using fallback');
-                            });
-                        
-                        widget.addEventListener('statechange', function(e) {
-                            if (e.detail.state === 'verified') {
-                                console.log('Altcha verified');
-                            }
-                        });
-                    }
-                })();
-            </script>
         {% endif %}
     </div>
 {% endblock %}
