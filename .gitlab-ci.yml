@@ -109,7 +109,7 @@ deploy-sandbox:
   script:
     # Extract package for deployment
     - cd package
-    - unzip -q MauticMultiCaptchaBundle-*.zip
+    - unzip -qo MauticMultiCaptchaBundle-*.zip
         
     # Deploy to sandbox using rsync
     - |
@@ -156,7 +156,7 @@ deploy-live:
   script:
     # Extract package for deployment
     - cd package
-    - unzip -q MauticMultiCaptchaBundle-*.zip
+    - unzip -qo MauticMultiCaptchaBundle-*.zip
     
     # Deploy to live using rsync
     - |
