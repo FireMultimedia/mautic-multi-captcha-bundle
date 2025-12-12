@@ -8,15 +8,10 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * <h1>Class AltchaApiController</h1>
+ * Class AltchaApiController
  * 
  * Simple API Controller for ALTCHA challenge generation
  * No inheritance to avoid Mautic/Symfony DI conflicts
- *
- * @package MauticPlugin\MauticMultiCaptchaBundle\Controller
- *
- * @authors see: composer.json
- * @license GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
  */
 class AltchaApiController
 {
@@ -28,14 +23,8 @@ class AltchaApiController
     }
 
     /**
-     * <h2>generateChallengeAction</h2>
-     * 
      * API endpoint to generate a fresh ALTCHA challenge as JSON
      * Uses default configuration values for security
-     * 
-     * @param Request $request
-     * 
-     * @return JsonResponse
      */
     public function generateChallengeAction(Request $request): JsonResponse
     {
