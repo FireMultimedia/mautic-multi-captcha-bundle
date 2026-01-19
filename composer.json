@@ -1,6 +1,6 @@
 {
     "name": "firemultimedia/mautic-multi-captcha-bundle",
-    "description": "This plugin brings Google's reCAPTCHA, hCaptcha, and Cloudflare Turnstile integration to mautic.",
+    "description": "This plugin brings ALTCHA, hCaptcha, Google's reCAPTCHA, and Cloudflare Turnstile integration to mautic.",
     "type": "mautic-plugin",
     "license": "GPL-3.0-only",
     "authors": [{
@@ -9,6 +9,9 @@
     }, {
         "name": "FireMultimedia B.V.",
         "email": "support@firemultimedia.nl"
+    }, {
+      "name": "Björn Rafreider",
+      "email": "bjoern_rafreider@visual4.de"
     }],
     "keywords": [
         "mautic",
@@ -24,13 +27,13 @@
         "mautic/core-lib": "^5.0|^6.0|^7.0",
         "altcha-org/altcha": "^1.0"
     },
-    "require-dev": {
-        "phpunit/phpunit": "^10.0"
-    },
     "autoload": {
         "psr-4": {
             "MauticPlugin\\MauticMultiCaptchaBundle\\": ""
         }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.0"
     },
     "autoload-dev": {
         "psr-4": {

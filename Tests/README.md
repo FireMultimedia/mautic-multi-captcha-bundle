@@ -2,7 +2,7 @@
 
 ## Overview
 
-This directory contains property-based and unit tests for the Altcha integration.
+This directory contains property-based and unit tests for the ALTCHA integration.
 
 ## Running Tests
 
@@ -37,8 +37,8 @@ Property-based tests verify universal properties across many random inputs (100 
 
 Unit tests verify specific behaviors:
 
-- **testGetName**: Verifies integration name is "Altcha"
-- **testGetDisplayName**: Verifies display name is "Altcha"  
+- **testGetName**: Verifies integration name is "ALTCHA"
+- **testGetDisplayName**: Verifies display name is "ALTCHA"  
 - **testGetAuthenticationType**: Verifies authentication type is "none"
 - **testGetRequiredKeyFields**: Verifies hmac_key field is defined
 

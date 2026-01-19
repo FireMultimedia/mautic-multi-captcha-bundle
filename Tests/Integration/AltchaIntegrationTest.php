@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 /**
  * Property-Based Tests for AltchaIntegration
  * 
- * **Feature: altcha-integration, Property 1: HMAC-Key Persistence**
+ * **Feature: ALTCHA-integration, Property 1: HMAC-Key Persistence**
  * **Validates: Requirements 1.3**
  */
 class AltchaIntegrationTest extends TestCase {
@@ -138,7 +138,7 @@ class AltchaIntegrationTest extends TestCase {
         $method = $reflection->getMethod('getDisplayName');
         $method->setAccessible(true);
         
-        $this->assertEquals('Altcha', $method->invoke($mockIntegration));
+        $this->assertEquals('ALTCHA', $method->invoke($mockIntegration));
     }
 
     /**

@@ -153,13 +153,15 @@ Varables
     {% set expires = field.properties.expires|default(120) %}
     {% set invisible = field.properties.invisible|default(false) %}
 
-    {# Load Altcha script via JavaScript to preserve type="module" #}
+    {# Load ALTCHA script via JavaScript to preserve type="module" #}
     {% if inForm is not defined or not inForm %}
     <script>
         (function() {
-            var script = document.createElement('script');
-            script.type = 'module';
-            script.src = '{{ absolute_url(asset('plugins/MauticMultiCaptchaBundle/Assets/altcha.min.js')) }}';
+            var script = document.createElement("script");
+
+            script.type = "module";
+            script.src  = "{{ absolute_url(asset("plugins/MauticMultiCaptchaBundle/Assets/js/altcha.min.js")) }}";
+
             document.head.appendChild(script);
         })();
     </script>
@@ -180,7 +182,7 @@ Varables
         {% if inForm is defined and (true == inForm or inForm is not empty) %}
             {# In backend form builder - show placeholder only, no active widget #}
             <div style="padding: 10px; background: #f5f5f5; border: 1px dashed #ccc; text-align: center;">
-                Altcha Widget ({% if invisible %}invisible mode{% else %}visible mode{% endif %})
+                ALTCHA Widget ({% if invisible %}invisible mode{% else %}visible mode{% endif %})
             </div>
         {% else %}
             {# In frontend - show active Altcha widget with challengeurl for dynamic loading #}

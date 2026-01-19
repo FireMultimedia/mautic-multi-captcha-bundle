@@ -16,7 +16,7 @@ class AltchaClientTest extends TestCase {
     /**
      * Property Test: Challenge Structure Completeness
      * 
-     * **Feature: altcha-integration, Property 4: Challenge Structure Completeness**
+     * **Feature: ALTCHA-integration, Property 4: Challenge Structure Completeness**
      * **Validates: Requirements 3.2, 3.3**
      * 
      * For any valid configuration parameters (maxNumber, expires), when generating
@@ -79,13 +79,13 @@ class AltchaClientTest extends TestCase {
     /**
      * Property Test: Valid Payload Acceptance
      * 
-     * **Feature: altcha-integration, Property 5: Valid Payload Acceptance**
+     * **Feature: ALTCHA-integration, Property 5: Valid Payload Acceptance**
      * **Validates: Requirements 4.1, 4.2**
      * 
      * For any correctly generated challenge and its valid solution payload,
      * when verifying the payload, the system should accept it.
      * 
-     * Note: This test generates challenges and uses the Altcha library to solve them,
+     * Note: This test generates challenges and uses the ALTCHA library to solve them,
      * then verifies that valid solutions are accepted.
      * 
      * Generator: Random maxNumber (1000-50000), expires (60-300)
@@ -131,7 +131,7 @@ class AltchaClientTest extends TestCase {
                 continue;
             }
 
-            // Create payload (base64-encoded JSON as expected by Altcha)
+            // Create payload (base64-encoded JSON as expected by ALTCHA)
             // The signature from the challenge should be used as-is
             $payloadData = [
                 'algorithm' => $challenge['algorithm'],
@@ -171,7 +171,7 @@ class AltchaClientTest extends TestCase {
     /**
      * Property Test: Invalid Payload Rejection
      * 
-     * **Feature: altcha-integration, Property 6: Invalid Payload Rejection**
+     * **Feature: ALTCHA-integration, Property 6: Invalid Payload Rejection**
      * **Validates: Requirements 4.3**
      * 
      * For any payload with incorrect signature, wrong number, or manipulated data,
@@ -289,13 +289,13 @@ class AltchaClientTest extends TestCase {
     }
 
     /**
-     * Helper: Solve a challenge by brute force using Altcha library
+     * Helper: Solve a challenge by brute force using ALTCHA library
      * 
      * @param array $challenge
      * @return int|null The solution number, or null if not found
      */
     private function solveChallenge(array $challenge): ?int {
-        // Use Altcha library to solve the challenge
+        // Use ALTCHA library to solve the challenge
         $altcha = new \AltchaOrg\Altcha\Altcha('test-hmac-key-for-testing-purposes-12345');
         
         $algorithm = \AltchaOrg\Altcha\Hasher\Algorithm::from($challenge['algorithm']);

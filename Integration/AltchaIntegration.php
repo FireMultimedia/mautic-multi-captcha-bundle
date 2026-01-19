@@ -23,7 +23,7 @@ class AltchaIntegration extends AbstractIntegration {
 
     /** {@inheritDoc} */
     public function getDisplayName() {
-        return "Altcha";
+        return "ALTCHA";
     }
 
     /** {@inheritDoc} */

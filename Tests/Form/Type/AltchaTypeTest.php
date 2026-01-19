@@ -27,7 +27,7 @@ class AltchaTypeTest extends TestCase {
     /**
      * Property Test: maxNumber Range Validation
      * 
-     * **Feature: altcha-integration, Property 2: maxNumber Range Validation**
+     * **Feature: ALTCHA-integration, Property 2: maxNumber Range Validation**
      * **Validates: Requirements 2.4**
      * 
      * For any integer value, when setting the maxNumber field property,
@@ -105,7 +105,7 @@ class AltchaTypeTest extends TestCase {
     /**
      * Property Test: Expires Range Validation
      * 
-     * **Feature: altcha-integration, Property 3: Expires Range Validation**
+     * **Feature: ALTCHA-integration, Property 3: Expires Range Validation**
      * **Validates: Requirements 2.5**
      * 
      * For any integer value, when setting the expires field property,
