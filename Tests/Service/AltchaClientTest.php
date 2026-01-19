@@ -14,6 +14,90 @@ use PHPUnit\Framework\TestCase;
 class AltchaClientTest extends TestCase {
 
     /**
+     * Test: getConfiguration returns configured values
+     * 
+     * **Feature: ALTCHA-integration, Configuration Retrieval**
+     * **Validates: Global configuration settings**
+     * 
+     * When maxNumber and expires are configured in the integration settings,
+     * getConfiguration should return these values.
+     * 
+     * @test
+     */
+    public function testGetConfigurationReturnsConfiguredValues(): void {
+        $expectedMaxNumber = 75000;
+        $expectedExpires = 180;
+
+        // Create client with configured values
+        $client = $this->createAltchaClientWithConfig([
+            'hmac_key' => 'test-hmac-key',
+            'maxNumber' => $expectedMaxNumber,
+            'expires' => $expectedExpires
+        ]);
+
+        $config = $client->getConfiguration();
+
+        $this->assertIsArray($config);
+        $this->assertArrayHasKey('maxNumber', $config);
+        $this->assertArrayHasKey('expires', $config);
+        $this->assertEquals($expectedMaxNumber, $config['maxNumber']);
+        $this->assertEquals($expectedExpires, $config['expires']);
+    }
+
+    /**
+     * Test: getConfiguration returns null for missing values
+     * 
+     * **Feature: ALTCHA-integration, Configuration Retrieval**
+     * **Validates: Default handling when values are not configured**
+     * 
+     * When maxNumber and expires are not configured in the integration settings,
+     * getConfiguration should return null for these values.
+     * 
+     * @test
+     */
+    public function testGetConfigurationReturnsNullForMissingValues(): void {
+        // Create client without maxNumber and expires configured
+        $client = $this->createAltchaClientWithConfig([
+            'hmac_key' => 'test-hmac-key'
+        ]);
+
+        $config = $client->getConfiguration();
+
+        $this->assertIsArray($config);
+        $this->assertArrayHasKey('maxNumber', $config);
+        $this->assertArrayHasKey('expires', $config);
+        $this->assertNull($config['maxNumber']);
+        $this->assertNull($config['expires']);
+    }
+
+    /**
+     * Test: getConfiguration handles string values correctly
+     * 
+     * **Feature: ALTCHA-integration, Configuration Retrieval**
+     * **Validates: Type conversion from string to integer**
+     * 
+     * When maxNumber and expires are stored as strings (common in form data),
+     * getConfiguration should convert them to integers.
+     * 
+     * @test
+     */
+    public function testGetConfigurationConvertsStringToInteger(): void {
+        // Create client with string values
+        $client = $this->createAltchaClientWithConfig([
+            'hmac_key' => 'test-hmac-key',
+            'maxNumber' => '60000',
+            'expires' => '150'
+        ]);
+
+        $config = $client->getConfiguration();
+
+        $this->assertIsInt($config['maxNumber']);
+        $this->assertIsInt($config['expires']);
+        $this->assertEquals(60000, $config['maxNumber']);
+        $this->assertEquals(150, $config['expires']);
+    }
+
+    /**
      * Property Test: Challenge Structure Completeness
      * 
      * **Feature: ALTCHA-integration, Property 4: Challenge Structure Completeness**
@@ -273,13 +357,22 @@ class AltchaClientTest extends TestCase {
      * Helper: Create AltchaClient with mocked dependencies
      */
     private function createAltchaClient(): AltchaClient {
+        return $this->createAltchaClientWithConfig([
+            'hmac_key' => 'test-hmac-key-for-testing-purposes-12345'
+        ]);
+    }
+
+    /**
+     * Helper: Create AltchaClient with custom configuration
+     */
+    private function createAltchaClientWithConfig(array $keys): AltchaClient {
         // Mock IntegrationHelper
         $integrationHelper = $this->createMock(IntegrationHelper::class);
         
         // Mock AbstractIntegration
         $integration = $this->createMock(AbstractIntegration::class);
         $integration->method('getKeys')
-            ->willReturn(['hmac_key' => 'test-hmac-key-for-testing-purposes-12345']);
+            ->willReturn($keys);
         
         $integrationHelper->method('getIntegrationObject')
             ->with(AltchaIntegration::INTEGRATION_NAME)

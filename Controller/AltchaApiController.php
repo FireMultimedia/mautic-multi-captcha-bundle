@@ -24,7 +24,7 @@ class AltchaApiController
 
     /**
      * API endpoint to generate a fresh ALTCHA challenge as JSON
-     * Uses default configuration values for security
+     * Uses configuration values from global ALTCHA settings with fallback defaults
      */
     public function generateChallengeAction(Request $request): JsonResponse
     {
@@ -40,9 +40,10 @@ class AltchaApiController
         }
         
         try {
-            // Use secure default values - no user input accepted for security
-            $maxNumber = 100000;  // Default difficulty
-            $expires = 60;       // 1 minute default expiry
+            // Get configuration values from global settings with fallback defaults
+            $config = $this->altchaClient->getConfiguration();
+            $maxNumber = $config['maxNumber'] ?? 50000;  // Default difficulty
+            $expires = $config['expires'] ?? 120;        // Default 2 minutes expiry
             
             // Generate challenge
             $challengeData = $this->altchaClient->createChallenge($maxNumber, $expires);

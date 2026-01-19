@@ -21,47 +21,7 @@ class AltchaType extends AbstractType {
 
     /** {@inheritDoc} */
     public function buildForm(FormBuilderInterface $builder, array $options) {
-        $builder->add("maxNumber", NumberType::class, [
-            "label" => "strings.altcha.settings.max_number",
-            "data"  => isset($options["data"]["maxNumber"]) ? (int) $options["data"]["maxNumber"] : 50000,
-
-            "label_attr" => [
-                "class" => "control-label"
-            ],
-
-            "attr" => [
-                "class"   => "form-control",
-                "tooltip" => "strings.altcha.settings.max_number.tooltip"
-            ],
-
-            "constraints" => [
-                new Range([
-                    "min" => 1000,
-                    "max" => 1000000,
-                    "notInRangeMessage" => "Value must be between {{ min }} and {{ max }}"
-                ])
-            ]
-        ])->add("expires", NumberType::class, [
-            "label" => "strings.altcha.settings.expires",
-            "data"  => isset($options["data"]["expires"]) ? (int) $options["data"]["expires"] : 120,
-
-            "label_attr" => [
-                "class" => "control-label"
-            ],
-
-            "attr" => [
-                "class"   => "form-control",
-                "tooltip" => "strings.altcha.settings.expires.tooltip"
-            ],
-
-            "constraints" => [
-                new Range([
-                    "min" => 10,
-                    "max" => 300,
-                    "notInRangeMessage" => "Value must be between {{ min }} and {{ max }}"
-                ])
-            ]
-        ])->add("invisible", YesNoButtonGroupType::class, [
+        $builder->add("invisible", YesNoButtonGroupType::class, [
             "label" => "strings.altcha.settings.invisible",
             "data"  => $options["data"]["invisible"] ?? false,
 
