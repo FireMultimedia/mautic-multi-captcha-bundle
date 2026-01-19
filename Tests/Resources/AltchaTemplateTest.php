@@ -5,7 +5,7 @@ namespace MauticPlugin\MauticMultiCaptchaBundle\Tests\Resources;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Property-Based Tests for Altcha Template Resource Loading
+ * Property-Based Tests for ALTCHA Template Resource Loading
  * 
  * **Feature: altcha-integration, Property 8: Local Resource Loading**
  * **Validates: Requirements 8.1**
@@ -15,7 +15,7 @@ class AltchaTemplateTest extends TestCase {
     /**
      * Property Test: Local Resource Loading
      * 
-     * For any rendered Altcha widget template, all script sources should reference
+     * For any rendered ALTCHA widget template, all script sources should reference
      * local or CDN URLs without third-party tracking domains.
      * 
      * This property verifies that:
@@ -166,7 +166,7 @@ class AltchaTemplateTest extends TestCase {
      */
     public function testTemplateFileExists(): void {
         $templatePath = __DIR__ . '/../../Resources/views/Integration/altcha.html.twig';
-        $this->assertFileExists($templatePath, 'Altcha template file should exist');
+        $this->assertFileExists($templatePath, 'ALTCHA template file should exist');
     }
 
     /**
@@ -188,7 +188,7 @@ class AltchaTemplateTest extends TestCase {
     /**
      * Unit test: Verify template contains altcha-widget with name attribute
      * 
-     * The Altcha widget automatically creates its own hidden input field with the payload,
+     * The ALTCHA widget automatically creates its own hidden input field with the payload,
      * so we don't need a separate hidden input in the template.
      * 
      * @test
@@ -200,7 +200,7 @@ class AltchaTemplateTest extends TestCase {
         $this->assertStringContainsString(
             'name="{{ inputAttributes.name }}"',
             $content,
-            'Template should configure altcha-widget with name attribute for automatic hidden input creation'
+            'Template should configure ALTCHA-widget with name attribute for automatic hidden input creation'
         );
     }
 
@@ -230,20 +230,20 @@ class AltchaTemplateTest extends TestCase {
         $content = file_get_contents($templatePath);
         
         $this->assertStringContainsString(
-            'plugins/MauticMultiCaptchaBundle/Assets/altcha.min.js',
+            'plugins/MauticMultiCaptchaBundle/Assets/js/altcha.min.js',
             $content,
-            'Template should load Altcha widget from local assets'
+            'Template should load ALTCHA widget from local assets'
         );
     }
 
     /**
-     * Unit test: Verify local Altcha script file exists
+     * Unit test: Verify local ALTCHA script file exists
      * 
      * @test
      */
     public function testLocalAltchaScriptExists(): void {
-        $scriptPath = __DIR__ . '/../../Assets/altcha.min.js';
-        $this->assertFileExists($scriptPath, 'Local Altcha script file should exist');
+        $scriptPath = __DIR__ . '/../../Assets/js/altcha.min.js';
+        $this->assertFileExists($scriptPath, 'Local ALTCHA script file should exist');
     }
 
     /**

@@ -156,13 +156,15 @@ Varables
     {# Get challenge data from customParameters #}
     {% set challengeData = field.customParameters.challenge|default(null) %}
 
-    {# Load Altcha script via JavaScript to preserve type="module" #}
+    {# Load ALTCHA script via JavaScript to preserve type="module" #}
     {% if inForm is not defined or not inForm %}
     <script>
         (function() {
-            var script = document.createElement('script');
-            script.type = 'module';
-            script.src = '{{ absolute_url(asset('plugins/MauticMultiCaptchaBundle/Assets/altcha.min.js')) }}';
+            var script = document.createElement("script");
+
+            script.type = "module";
+            script.src  = "{{ absolute_url(asset("plugins/MauticMultiCaptchaBundle/Assets/js/altcha.min.js")) }}";
+
             document.head.appendChild(script);
         })();
     </script>
@@ -185,25 +187,18 @@ Varables
         {% if inForm is defined and (true == inForm or inForm is not empty) %}
             {# In backend form builder - show placeholder only, no active widget #}
             <div style="padding: 10px; background: #f5f5f5; border: 1px dashed #ccc; text-align: center;">
-                Altcha Widget ({% if invisible %}invisible mode{% else %}visible mode{% endif %})
+                ALTCHA Widget ({% if invisible %}invisible mode{% else %}visible mode{% endif %})
             </div>
         {% else %}
-            {# In frontend - show active Altcha widget #}
+            {# In frontend - show active ALTCHA widget #}
             {# Wrap widget in a container to isolate it from jQuery event bubbling #}
             <div style="isolation: isolate;">
-                <altcha-widget
-                    {% if challengeData %}
-                        challengejson="{{ challengeData|json_encode|e('html_attr') }}"
-                    {% else %}
-                        {# Fallback: If no challenge data, widget will auto-generate #}
-                    {% endif %}
-                    {% if invisible %}auto="onload" hidefooter hidelogo{% endif %}
-                    name="{{ inputAttributes.name }}"
-                    id="{{ inputAttributes.id }}"
-                ></altcha-widget>
+                <altcha-widget id="{{ inputAttributes.id }}"
+                               name="{{ inputAttributes.name }}"
+                               {% if invisible %}auto="onload" hidefooter hidelogo{% endif %}
+                               {% if challengeData %}challengejson="{{ challengeData|json_encode|e("html_attr") }}"{% else %}{# Fallback: If no challenge data, widget will auto-generate #}{% endif %}>
+                </altcha-widget>
             </div>
-            
-
         {% endif %}
     </div>
 {% endblock %}

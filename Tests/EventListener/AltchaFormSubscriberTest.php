@@ -24,10 +24,10 @@ class AltchaFormSubscriberTest extends TestCase {
     /**
      * Property Test: Lead Cleanup After Failed Validation
      * 
-     * **Feature: altcha-integration, Property 7: Lead Cleanup After Failed Validation**
+     * **Feature: ALTCHA-integration, Property 7: Lead Cleanup After Failed Validation**
      * **Validates: Requirements 7.5**
      * 
-     * For any form submission with invalid Altcha payload, if a lead was created
+     * For any form submission with invalid ALTCHA payload, if a lead was created
      * during processing, the system should automatically delete that lead after
      * validation failure.
      * 
@@ -322,7 +322,7 @@ class AltchaFormSubscriberTest extends TestCase {
         
         $translator = $this->createMock(TranslatorInterface::class);
         $translator->method('trans')
-            ->willReturn('Altcha verification failed.');
+            ->willReturn('ALTCHA verification failed.');
         
         $integration->method('getTranslator')
             ->willReturn($translator);

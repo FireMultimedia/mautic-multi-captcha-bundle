@@ -2,10 +2,21 @@
 
 namespace MauticPlugin\MauticMultiCaptchaBundle\Service;
 
+use \RuntimeException;
+use \JsonException;
+use \Exception;
+
+use \DateTimeImmutable;
+use \DateInterval;
+
 use AltchaOrg\Altcha\Altcha;
 use AltchaOrg\Altcha\ChallengeOptions;
+
+use AltchaOrg\Altcha\Hasher\Algorithm;
+
 use Mautic\PluginBundle\Helper\IntegrationHelper;
 use Mautic\PluginBundle\Integration\AbstractIntegration;
+
 use MauticPlugin\MauticMultiCaptchaBundle\Integration\AltchaIntegration;
 
 /**
@@ -18,7 +29,6 @@ use MauticPlugin\MauticMultiCaptchaBundle\Integration\AltchaIntegration;
  */
 class AltchaClient {
 
-    private ?string $hmacKey;
     private ?Altcha $altcha = null;
 
     /**
@@ -26,37 +36,33 @@ class AltchaClient {
      *
      * @param IntegrationHelper $integrationHelper
      * 
-     * @throws \RuntimeException if Altcha library is not installed
-     * @throws \RuntimeException if HMAC key is not configured
+     * @throws RuntimeException if ALTCHA library is not installed
+     * @throws RuntimeException if HMAC key is not configured
      */
     public function __construct(IntegrationHelper $integrationHelper) {
-        // Check if Altcha library is available
-        if (!class_exists(Altcha::class)) {
-            throw new \RuntimeException('Altcha library not installed. Run: composer require altcha-org/altcha');
-        }
+        if(!class_exists(Altcha::class))
+            throw new RuntimeException("ALTCHA library not installed. Run: composer require altcha-org/altcha");
 
         $integrationObject = $integrationHelper->getIntegrationObject(AltchaIntegration::INTEGRATION_NAME);
 
         if ($integrationObject instanceof AbstractIntegration) {
             $keys = $integrationObject->getKeys();
-            $this->hmacKey = $keys["hmac_key"] ?? null;
+
+            $hmacKey = $keys["hmac_key"] ?? null;
         } else {
-            $this->hmacKey = null;
+            $hmacKey = null;
         }
 
-        // Check if HMAC key is configured
-        if (empty($this->hmacKey)) {
-            throw new \RuntimeException('Altcha HMAC key not configured');
-        }
+        if(empty($hmacKey))
+            throw new RuntimeException("ALTCHA HMAC key not configured");
 
-        // Initialize Altcha instance
-        $this->altcha = new Altcha($this->hmacKey);
+        $this->altcha = new Altcha($hmacKey);
     }
 
     /**
      * <h2>createChallenge</h2>
      * 
-     * Generates a new Altcha challenge with the specified parameters.
+     * Generates a new ALTCHA challenge with the specified parameters.
      *
      * @param int $maxNumber Maximum random number for the challenge (1000-1000000)
      * @param int $expiresInSeconds Challenge expiration time in seconds (10-300)
@@ -66,34 +72,34 @@ class AltchaClient {
     public function createChallenge(int $maxNumber, int $expiresInSeconds): array {
         try {
             // Create challenge with expiration time
-            $expires = new \DateTimeImmutable();
-            $expires = $expires->add(new \DateInterval('PT' . $expiresInSeconds . 'S'));
-            
-            $options = new ChallengeOptions(
-                maxNumber: $maxNumber,
-                expires: $expires
-            );
+            $expires = new DateTimeImmutable();
 
-            $challenge = $this->altcha->createChallenge($options);
+            $expires = $expires->add(new DateInterval("PT{$expiresInSeconds}S"));
+            
+            $challenge = $this->altcha->createChallenge(new ChallengeOptions(Algorithm::SHA256, $maxNumber, $expires));
 
             // Convert Challenge object to array
             return [
-                'algorithm' => $challenge->algorithm,
-                'challenge' => $challenge->challenge,
-                'maxnumber' => $challenge->maxNumber,
-                'salt' => $challenge->salt,
-                'signature' => $challenge->signature
+                "algorithm" => $challenge->algorithm,
+                "challenge" => $challenge->challenge,
+                "maxnumber" => $challenge->maxNumber,
+                "salt"      => $challenge->salt,
+                "signature" => $challenge->signature
             ];
-        } catch (\Exception $e) {
-            error_log('Altcha challenge creation failed: ' . $e->getMessage() . ' | Trace: ' . $e->getTraceAsString());
+        } catch(Exception $e) {
+            error_log(sprintf(
+                "ALTCHA challenge creation failed: %s | Trace: %s",
+                $e->getMessage(),
+                $e->getTraceAsString())
+            );
+
             return [];
         }
     }
 
     /**
      * <h2>verify</h2>
-     * 
-     * Verifies an Altcha challenge payload.
+     *   Verifies an ALTCHA challenge payload.
      *
      * @param string $payload JSON string or base64-encoded string containing the challenge solution
      * 
@@ -101,29 +107,29 @@ class AltchaClient {
      */
     public function verify(string $payload): bool {
         try {
-            // Ensure payload is base64 encoded (required by Altcha library)
-            // If it's already base64, use it as-is
-            // If it's JSON, encode it to base64
+            // Ensure payload is base64 encoded (required by ALTCHA library)
+            // If it's already base64, use it as-is, if it's JSON, encode it to base64
             $decoded = base64_decode($payload, true);
-            if ($decoded === false || json_decode($decoded) === null) {
-                // Not valid base64 or not valid JSON after decoding
-                // Try to parse as JSON directly
-                $payloadData = json_decode($payload, true);
-                if ($payloadData !== null) {
-                    // It's JSON, encode it to base64
-                    $payload = base64_encode($payload);
-                } else {
+
+            /** @noinspection JsonEncodingApiUsageInspection supposed to fail in order to fail condition */
+            if($decoded === false || json_decode($decoded) === null) {
+                // Not valid base64 or not valid JSON after decoding, try to parse as JSON directly
+                $payloadData = json_decode($payload, true, 512, JSON_THROW_ON_ERROR);
+
+                if($payloadData === null)
                     return false;
-                }
+
+                // It's JSON, encode it to base64
+                $payload = base64_encode($payload);
             }
             
             // Verify the solution with checkExpires=true
             $result = $this->altcha->verifySolution($payload, true);
             
             return $result === true;
-        } catch (\JsonException $e) {
+        } catch(JsonException $e) {
             return false;
-        } catch (\Exception $e) {
+        } catch(Exception $e) {
             return false;
         }
     }

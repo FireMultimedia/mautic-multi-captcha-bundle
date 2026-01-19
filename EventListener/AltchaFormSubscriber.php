@@ -126,15 +126,11 @@ class AltchaFormSubscriber implements EventSubscriberInterface {
         if(!$this->isConfigured)
             return;
 
-        // Get the payload from the form submission
-        $payload = $event->getValue();
-
-        if($this->altchaClient->verify($payload))
+        if($this->altchaClient->verify($event->getValue()))
             return;
 
-        $event->failedValidation($this->translator === null ? "Altcha verification failed." : $this->translator->trans("strings.altcha.failure_message"));
+        $event->failedValidation($this->translator === null ? "ALTCHA verification failed." : $this->translator->trans("strings.altcha.failure_message"));
 
-        // Add lead cleanup logic after failed validation
         $this->eventDispatcher->addListener(LeadEvents::LEAD_POST_SAVE, function(LeadEvent $event) {
             if(!$event->isNew())
                 return;

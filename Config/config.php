@@ -68,7 +68,7 @@ switch(true) {
 
 return [
     "name"        => "MultiCAPTCHA",
-    "description" => "Enables Google's reCAPTCHA, hCaptcha, Cloudflare Turnstile, and Altcha integration for Mautic",
+    "description" => "Enables Google's reCAPTCHA, hCaptcha, Cloudflare Turnstile, and ALTCHA integration for Mautic",
     "version"     => "1.1.0",
     "author"      => "FireMultimedia B.V.",
 
