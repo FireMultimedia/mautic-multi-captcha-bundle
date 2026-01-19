@@ -59,7 +59,6 @@ Varables
     }) %}
 {% endif %}
 
-
 {# Label and input #}
 {% if inForm is defined and (true == inForm or inForm is not empty) %}
     {% if field.type in ['button', 'pagebreak'] %}
@@ -107,7 +106,6 @@ Varables
     }) %}
 {% endif %}
 
-
 {# Field is required #}
 {% if field.isRequired is defined and field.isRequired %}
     {% set required = true %}
@@ -148,8 +146,9 @@ Varables
 {% set formName = formName|replace({'_': ''})|default('mauticform') %}
 
 {% block recaptcha %}
-    {% set version = field.customParameters.version %}
-    {% set siteKey = field.customParameters.site_key %}
+    {% set version = field.customParameters.version|default("v3") %}
+    {% set siteKey = field.customParameters.site_key|default(null) %}
+    {% set explicitConsent = field.properties.explicitConsent|default(false) %}
 
     {% if field.showLabel %}
         <label {% for attrName, attrValue in labelAttributes %}{{ attrName }}="{% if attrValue is iterable %}{{ attrValue|join(' ') }}{% else %}{{ attrValue }}{% endif %}"{% endfor %}>
@@ -157,81 +156,87 @@ Varables
         </label>
     {% endif %}
 
-    <script type="text/javascript">
-        function verifyCallback_{{ formName }}(response) {
-            document.getElementById("mauticform_input_{{ formName }}_{{ field.alias }}").value = response;
-        }
+    {% if inForm is defined and (true == inForm or inForm is not empty) %}
+        <div style="padding: 10px; background: #f5f5f5; border: 1px dashed #ccc; text-align: center;">
+            Google reCAPTCHA Widget ({% if explicitConsent %}explicit{% else %}implicit{% endif %} consent mode)
+        </div>
+    {% else %}
+        <script type="text/javascript">
+            function verifyCallback_{{ formName }}(response) {
+                document.getElementById("mauticform_input_{{ formName }}_{{ field.alias }}").value = response;
+            }
 
-        function onLoad_{{ formName }}() {
-            grecaptcha.execute("{{ siteKey }}", {action: "form"}).then(function(token) {
-                verifyCallback_{{ formName }}(token);
-            });
-        }
-    </script>
-
-    {% if field.properties.explicitConsent %}
-        <script>
-            function acceptCookieNotice(checkbox) {
-                if(!checkbox.checked)
-                    return
-
-                checkbox.disabled = true;
-
-                const captchaRequestElement = document.getElementById("provider");
-
-                if(!captchaRequestElement)
-                    return;
-
-                const googleReCaptcha = document.createElement("script");
-
-                const sources = {
-                    "v2": "https://www.google.com/recaptcha/api.js",
-                    "v3": "https://www.google.com/recaptcha/api.js?render={{ siteKey }}&onload=onLoad_{{ formName }}"
-                };
-
-                googleReCaptcha.src = sources.{{ version }};
-
-                captchaRequestElement.innerHTML = "";
-
-                captchaRequestElement.appendChild(googleReCaptcha);
+            function onLoad_{{ formName }}() {
+                grecaptcha.execute("{{ siteKey }}", {action: "form"}).then(function(token) {
+                    verifyCallback_{{ formName }}(token);
+                });
             }
         </script>
 
-        <div style="display:flex">
-            <input id="recaptchaCheck"
-                   name="recaptchaCheck"
-                   type="checkbox"
-                   style="margin-right:1rem"
-                   onchange="acceptCookieNotice(this);" />
+        {% if explicitConsent %}
+            <script>
+                function acceptCookieNotice(checkbox) {
+                    if(!checkbox.checked)
+                        return
 
-            <label for="recaptchaCheck">
-                {{ field.customParameters.stringBag["accept_cookies"] }}<br />
-                <strong>{{ field.customParameters.stringBag["accept_cookies.notice"] }}:</strong> {{ field.customParameters.stringBag["accept_cookies.notice.value"] }}
-            </label>
-        </div>
+                    checkbox.disabled = true;
 
-        <div id="provider"></div>
-    {% else %}
-        {% if version == "v2" %}
-            <script src="https://www.google.com/recaptcha/api.js"></script>
-        {% else %}
-            <script src="https://www.google.com/recaptcha/api.js?render={{ siteKey }}&onload=onLoad_{{ formName }}"></script>
-        {% endif %}
-    {% endif %}
+                    const captchaRequestElement = document.getElementById("provider");
 
-    <div {% for attrName, attrValue in containerAttributes %}{{ attrName }}="{% if attrValue is iterable %}{{ attrValue|join(' ') }}{% else %}{{ attrValue }}{% endif %}"{% endfor %}>
-        <div style="position: relative; top:25px; padding-bottom:25px">
-            <span class="mauticform-errormsg" style="display: none;"></span>
-        </div>
+                    if(!captchaRequestElement)
+                        return;
 
-        {% if version == 'v2' %}
-            <div class="g-recaptcha"
-                 data-sitekey="{{ siteKey }}"
-                 data-callback="verifyCallback_{{ formName }}">
+                    const googleReCaptcha = document.createElement("script");
+
+                    const sources = {
+                        "v2": "https://www.google.com/recaptcha/api.js",
+                        "v3": "https://www.google.com/recaptcha/api.js?render={{ siteKey }}&onload=onLoad_{{ formName }}"
+                    };
+
+                    googleReCaptcha.src = sources.{{ version }};
+
+                    captchaRequestElement.innerHTML = "";
+
+                    captchaRequestElement.appendChild(googleReCaptcha);
+                }
+            </script>
+
+            <div style="display:flex">
+                <input id="recaptchaCheck"
+                       name="recaptchaCheck"
+                       type="checkbox"
+                       style="margin-right:1rem"
+                       onchange="acceptCookieNotice(this);" />
+
+                <label for="recaptchaCheck">
+                    {{ field.customParameters.stringBag["accept_cookies"] }}<br />
+                    <strong>{{ field.customParameters.stringBag["accept_cookies.notice"] }}:</strong> {{ field.customParameters.stringBag["accept_cookies.notice.value"] }}
+                </label>
             </div>
+
+            <div id="provider"></div>
+        {% else %}
+            {% if version == "v2" %}
+                <script src="https://www.google.com/recaptcha/api.js"></script>
+            {% else %}
+                <script src="https://www.google.com/recaptcha/api.js?render={{ siteKey }}&onload=onLoad_{{ formName }}"></script>
+            {% endif %}
         {% endif %}
 
-        <input type="hidden"
-               {% for attrName, attrValue in inputAttributes %}{{ attrName }}="{% if attrValue is iterable %}{{ attrValue|join(' ') }}{% else %}{{ attrValue }}{% endif %}"{% endfor %}>
-    </div>
+        <div {% for attrName, attrValue in containerAttributes %}{{ attrName }}="{% if attrValue is iterable %}{{ attrValue|join(' ') }}{% else %}{{ attrValue }}{% endif %}"{% endfor %}>
+            <div style="position: relative; top:25px; padding-bottom:25px">
+                <span class="mauticform-errormsg" style="display: none;"></span>
+            </div>
+
+            {% if version == 'v2' %}
+                <div class="g-recaptcha"
+                     data-sitekey="{{ siteKey }}"
+                     data-callback="verifyCallback_{{ formName }}">
+                </div>
+            {% endif %}
+
+            <input type="hidden"
+                   {% for attrName, attrValue in inputAttributes %}{{ attrName }}="{% if attrValue is iterable %}{{ attrValue|join(' ') }}{% else %}{{ attrValue }}{% endif %}"{% endfor %}>
+        </div>
+    {% endif %}
 {% endblock %}

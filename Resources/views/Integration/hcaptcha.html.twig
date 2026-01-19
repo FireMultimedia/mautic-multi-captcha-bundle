@@ -59,7 +59,6 @@ Varables
     }) %}
 {% endif %}
 
-
 {# Label and input #}
 {% if inForm is defined and (true == inForm or inForm is not empty) %}
     {% if field.type in ['button', 'pagebreak'] %}
@@ -107,7 +106,6 @@ Varables
     }) %}
 {% endif %}
 
-
 {# Field is required #}
 {% if field.isRequired is defined and field.isRequired %}
     {% set required = true %}
@@ -147,8 +145,9 @@ Varables
 
 {% set formName = formName|replace({'_': ''})|default('mauticform') %}
 
-{% block recaptcha %}
-    {% set siteKey = field.customParameters.site_key %}
+{% block hcaptcha %}
+    {% set siteKey = field.customParameters.site_key|default(null) %}
+    {% set explicitConsent = field.properties.explicitConsent|default(false) %}
 
     {% if field.showLabel %}
         <label {% for attrName, attrValue in labelAttributes %}{{ attrName }}="{% if attrValue is iterable %}{{ attrValue|join(' ') }}{% else %}{{ attrValue }}{% endif %}"{% endfor %}>
@@ -156,54 +155,60 @@ Varables
         </label>
     {% endif %}
 
-    {% if field.properties.explicitConsent %}
-        <script type="text/javascript">
-            function acceptCookieNotice(checkbox) {
-                if(!checkbox.checked)
-                    return
-
-                checkbox.disabled = true;
-
-                const captchaProviderElement = document.getElementById("provider");
-
-                if(!captchaProviderElement)
-                    return;
-
-                const hCaptcha = document.createElement("script");
-
-                hCaptcha.src = "https://js.hcaptcha.com/1/api.js";
-
-                captchaProviderElement.innerHTML = "";
-
-                captchaProviderElement.appendChild(hCaptcha);
-            }
-        </script>
-
-        <div style="display:flex">
-            <input id="hCaptchaCheck"
-                   name="hCaptchaCheck"
-                   type="checkbox"
-                   style="margin-right:1rem"
-                   onchange="acceptCookieNotice(this);" />
-
-            <label for="hCaptchaCheck">
-                {{ field.customParameters.stringBag["accept_cookies"] }}<br />
-                <strong>{{ field.customParameters.stringBag["accept_cookies.notice"] }}:</strong> {{ field.customParameters.stringBag["accept_cookies.notice.value"] }}
-            </label>
+    {% if inForm is defined and (true == inForm or inForm is not empty) %}
+        <div style="padding: 10px; background: #f5f5f5; border: 1px dashed #ccc; text-align: center;">
+            hCaptcha Widget ({% if explicitConsent %}explicit{% else %}implicit{% endif %} consent mode)
         </div>
-
-        <div id="provider"></div>
     {% else %}
-        <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
+        {% if explicitConsent %}
+            <script type="text/javascript">
+                function acceptCookieNotice(checkbox) {
+                    if(!checkbox.checked)
+                        return
+
+                    checkbox.disabled = true;
+
+                    const captchaProviderElement = document.getElementById("provider");
+
+                    if(!captchaProviderElement)
+                        return;
+
+                    const hCaptcha = document.createElement("script");
+
+                    hCaptcha.src = "https://js.hcaptcha.com/1/api.js";
+
+                    captchaProviderElement.innerHTML = "";
+
+                    captchaProviderElement.appendChild(hCaptcha);
+                }
+            </script>
+
+            <div style="display:flex">
+                <input id="hCaptchaCheck"
+                       name="hCaptchaCheck"
+                       type="checkbox"
+                       style="margin-right:1rem"
+                       onchange="acceptCookieNotice(this);" />
+
+                <label for="hCaptchaCheck">
+                    {{ field.customParameters.stringBag["accept_cookies"] }}<br />
+                    <strong>{{ field.customParameters.stringBag["accept_cookies.notice"] }}:</strong> {{ field.customParameters.stringBag["accept_cookies.notice.value"] }}
+                </label>
+            </div>
+
+            <div id="provider"></div>
+        {% else %}
+            <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
+        {% endif %}
+
+        <div {% for attrName, attrValue in containerAttributes %}{{ attrName }}="{% if attrValue is iterable %}{{ attrValue|join(' ') }}{% else %}{{ attrValue }}{% endif %}"{% endfor %}>
+            <div style="position: relative; top:25px; padding-bottom:25px">
+                <span class="mauticform-errormsg" style="display: none;"></span>
+            </div>
+
+            <div class="h-captcha"
+                 data-sitekey="{{ siteKey }}">
+            </div>
+        </div>
     {% endif %}
-
-    <div {% for attrName, attrValue in containerAttributes %}{{ attrName }}="{% if attrValue is iterable %}{{ attrValue|join(' ') }}{% else %}{{ attrValue }}{% endif %}"{% endfor %}>
-        <div style="position: relative; top:25px; padding-bottom:25px">
-            <span class="mauticform-errormsg" style="display: none;"></span>
-        </div>
-
-        <div class="h-captcha"
-             data-sitekey="{{ siteKey }}">
-        </div>
-    </div>
 {% endblock %}
