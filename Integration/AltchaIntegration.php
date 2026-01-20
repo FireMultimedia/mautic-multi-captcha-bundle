@@ -38,4 +38,20 @@ class AltchaIntegration extends AbstractIntegration {
         ];
     }
 
+    /** {@inheritDoc} */
+    public function getAvailableFields() {
+        return [
+            "maxNumber" => [
+                "label" => "strings.altcha.settings.max_number",
+                "type" => "number",
+                "required" => false
+            ],
+            "expires" => [
+                "label" => "strings.altcha.settings.expires",
+                "type" => "number",
+                "required" => false
+            ]
+        ];
+    }
+
 }

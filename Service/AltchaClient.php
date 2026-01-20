@@ -30,6 +30,7 @@ use MauticPlugin\MauticMultiCaptchaBundle\Integration\AltchaIntegration;
 class AltchaClient {
 
     private ?Altcha $altcha = null;
+    private ?AbstractIntegration $integrationObject = null;
 
     /**
      * <h2>AltchaClient constructor.</h2>
@@ -43,10 +44,10 @@ class AltchaClient {
         if(!class_exists(Altcha::class))
             throw new RuntimeException("ALTCHA library not installed. Run: composer require altcha-org/altcha");
 
-        $integrationObject = $integrationHelper->getIntegrationObject(AltchaIntegration::INTEGRATION_NAME);
+        $this->integrationObject = $integrationHelper->getIntegrationObject(AltchaIntegration::INTEGRATION_NAME);
 
-        if ($integrationObject instanceof AbstractIntegration) {
-            $keys = $integrationObject->getKeys();
+        if ($this->integrationObject instanceof AbstractIntegration) {
+            $keys = $this->integrationObject->getKeys();
 
             $hmacKey = $keys["hmac_key"] ?? null;
         } else {
@@ -57,6 +58,26 @@ class AltchaClient {
             throw new RuntimeException("ALTCHA HMAC key not configured");
 
         $this->altcha = new Altcha($hmacKey);
+    }
+
+    /**
+     * <h2>getConfiguration</h2>
+     * 
+     * Retrieves the ALTCHA configuration settings from the integration.
+     *
+     * @return array Configuration array with maxNumber and expires values
+     */
+    public function getConfiguration(): array {
+        if (!$this->integrationObject instanceof AbstractIntegration) {
+            return [];
+        }
+
+        $keys = $this->integrationObject->getKeys();
+
+        return [
+            'maxNumber' => isset($keys['maxNumber']) ? (int) $keys['maxNumber'] : null,
+            'expires' => isset($keys['expires']) ? (int) $keys['expires'] : null
+        ];
     }
 
     /**
