@@ -7,16 +7,89 @@ This project has been pruned to **ONLY** support Mautic 6 and has been tested on
 You _can_ use it with Mautic 5 as well, but we do not officially support this.
 Any issues opened from Mautic 5 will be regarded as spam.
 
+## Supported CAPTCHA Solutions
+This bundle provides four CAPTCHA options to protect your Mautic forms:
+- [**ALTCHA**](#ALTCHA): Self-hosted, GDPR-compliant CAPTCHA with no external dependencies (recommended for privacy-sensitive applications)
+- [**hCaptcha**](#hCaptcha): Privacy-focused alternative to reCAPTCHA with accessibility features
+- [**Google reCAPTCHA**](#Google-reCAPTCHA): Industry-standard CAPTCHA with v2 (checkbox) and v3 (invisible scoring) options
+- [**Cloudflare Turnstile**](#Cloudflare-Turnstile): Modern, privacy-respecting CAPTCHA from Cloudflare
+
 ## Installation
  1. Execute `composer require firemultimedia/mautic-multi-captcha-bundle` in the main directory of the mautic installation
  2. flush the cache `php bin/console cache:clear`.
  3. Navigate to the Plugins page and click "Install/Upgrade Plugins".
 
-You should now see three new plug-ins.
+You should now see four new plug-ins: ALTCHA, hCaptcha, Google reCAPTCHA, and Cloudflare Turnstile.
 
 ![plugins](.github/doc/plugins.png "plugins")
 
 ## Configuration
+### ALTCHA
+ALTCHA is designed with privacy in mind and offers significant advantages for GDPR compliance:
+- **No External API Calls**: All challenge generation and validation happens locally on your server
+- **No Third-Party Scripts**: The widget can be loaded from your own server or a CDN without tracking
+- **No Cookies or Storage**: ALTCHA does not use cookies or browser storage
+- **No User Data Collection**: No personal data is collected or transmitted to third parties
+- **No Explicit Consent Required**: Since no external services are used, explicit consent is not necessary under GDPR
+
+This makes ALTCHA an ideal choice for organizations that need to comply with strict data protection regulations while still protecting their forms from spam and abuse. Because of this, it requires slightly different (manual) configuration than the other solutions.
+
+Generate a secure random string to use as your (Hash-based Message Authentication Code) HMAC key. You can copy the output of the following (bash) command:
+```bash
+openssl rand -hex 32
+```
+
+And paste it here:
+
+![ALTCHA config](.github/doc/altcha_config.png "ALTCHA config")
+
+The ALTCHA field in the Mautic form can be configured under the "Properties" tab.
+
+![ALTCHA settings](.github/doc/altcha_settings.png "ALTCHA settings")
+
+- **Max Number** (1000-1000000, default: 50000): Controls the difficulty of the challenge. Higher numbers make the challenge harder to solve but take longer.
+- **Challenge Expires** (10-300 seconds, default: 120): How long the challenge remains valid before expiring.
+- **Invisible Mode** (default: off): When enabled, the CAPTCHA widget is hidden and automatically solves the challenge in the background without user interaction.
+
+ALTCHA supports an invisible mode where the challenge is solved automatically in the background without displaying a visible widget to the user. This provides a seamless user experience while still protecting against spam.
+
+To enable invisible mode:
+1. Edit the ALTCHA field properties in your form
+2. Toggle "Invisible Mode" to "Yes"
+3. Save the form
+
+When invisible mode is enabled, the challenge is solved automatically when the form loads, and users can submit the form without any additional interaction.
+
+#### Cross-Origin Resource Sharing (CORS): see [ALTCHA-CORS.md](ALTCHA-CORS.md)
+
+#### API Endpoint
+
+The plugin provides a REST API endpoint for dynamic challenge generation, which solves caching issues in Mautic forms:
+
+**Endpoint**: `GET /altcha/api/challenge`
+
+**Parameters**: None (uses secure default values)
+- `maxNumber`: 100000 (fixed for security)
+- `expires`: 300 seconds (fixed for security)
+
+**Example Request**:
+```bash
+curl "https://your-mautic.com/altcha/api/challenge"
+```
+
+**Example Response**:
+```json
+{
+    "algorithm": "SHA-256",
+    "challenge": "abc123...",
+    "maxnumber": 50000,
+    "salt": "def456...",
+    "signature": "ghi789..."
+}
+```
+
+This API endpoint is automatically used by the Altcha widget via the `challengeurl` attribute to ensure fresh challenges are generated for each form load, preventing caching issues. The widget handles all the complexity internally - no custom JavaScript required.
+
 ### hCaptcha
 Collect your keys from [hCaptcha](https://dashboard.hcaptcha.com/sites/new) and place them here:
 
@@ -44,8 +117,17 @@ The Cloudflare Turnstile field in the Mautic form can be configured under the "P
 
 ![Cloudflare Turnstile settings](.github/doc/turnstile_settings.png "Cloudflare Turnstile settings")
 
-
 ## Usage in Mautic Form
+### ALTCHA
+Add the "ALTCHA" field to the form and save changes.
+
+**Note**: Unlike other CAPTCHA solutions, ALTCHA does not require explicit consent mode because it does not use external services or collect user data. All processing happens locally on your server.
+          In standard mode, users see a checkbox-style widget. In invisible mode, the challenge is solved in the background without any visible widget.
+
+| Explicit consent mode:                                                                             | Invisible mode:                                                                                                                               |
+|----------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------|
+| ![ALTCHA](.github/doc/altcha_preview.png "Mautic Form with ALTCHA")                                | ![ALTCHA invisible mode](.github/doc/altcha_preview_invisible.png "Mautic Form with ALTCHA (invisible mode)")                                 |
+
 ### hCaptcha
 Add the "hCaptcha" field to the form and save changes.
 
@@ -76,3 +158,7 @@ Add the "Cloudflare Turnstile" field to the form and save changes.
 | Explicit consent mode:                                                                             | Implicit consent mode:                                                                                                                        |
 |----------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------|
 | ![Cloudflare Turnstile](.github/doc/turnstile_preview.png "Mautic Form with Cloudflare Turnstile") | ![Cloudflare Turnstile implied consent](.github/doc/turnstile_preview_implicit.png "Mautic Form with Cloudflare Turnstile (implied consent)") |
+
+## Acknowledgements
+- Original code by [Konstantin Scheumann](https://github.com/KonstantinCodes/)
+- ALTCHA integration by [Björn Rafreider](https://github.com/brafreider/)

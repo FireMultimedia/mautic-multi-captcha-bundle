@@ -1,16 +1,23 @@
 <?php declare(strict_types=1);
 
+use MauticPlugin\MauticMultiCaptchaBundle\EventListener\AltchaFormSubscriber;
 use MauticPlugin\MauticMultiCaptchaBundle\EventListener\HcaptchaFormSubscriber;
 use MauticPlugin\MauticMultiCaptchaBundle\EventListener\RecaptchaFormSubscriber;
 use MauticPlugin\MauticMultiCaptchaBundle\EventListener\TurnstileFormSubscriber;
 
+use MauticPlugin\MauticMultiCaptchaBundle\Service\AltchaClient;
 use MauticPlugin\MauticMultiCaptchaBundle\Service\HcaptchaClient;
 use MauticPlugin\MauticMultiCaptchaBundle\Service\RecaptchaClient;
 use MauticPlugin\MauticMultiCaptchaBundle\Service\TurnstileClient;
 
+use MauticPlugin\MauticMultiCaptchaBundle\Integration\AltchaIntegration;
 use MauticPlugin\MauticMultiCaptchaBundle\Integration\HcaptchaIntegration;
 use MauticPlugin\MauticMultiCaptchaBundle\Integration\RecaptchaIntegration;
 use MauticPlugin\MauticMultiCaptchaBundle\Integration\TurnstileIntegration;
+
+use MauticPlugin\MauticMultiCaptchaBundle\Controller\AltchaApiController;
+
+
 
 use Mautic\CoreBundle\Helper\AppVersion;
 
@@ -65,16 +72,33 @@ switch(true) {
 
 return [
     "name"        => "MultiCAPTCHA",
-    "description" => "Enables Google's reCAPTCHA, hCaptcha, and Cloudflare Turnstile integration for Mautic",
-    "version"     => "1.0.4",
+    "description" => "Enables Google's reCAPTCHA, hCaptcha, Cloudflare Turnstile, and ALTCHA integration for Mautic",
+    "version"     => "1.1.0",
     "author"      => "FireMultimedia B.V.",
 
     "routes" => [
-
+        "public" => [
+            "mautic_altcha_api_challenge" => [
+                "path"       => "/altcha/api/challenge",
+                "controller" => "mautic.altcha.controller.api:generateChallengeAction",
+                "method"     => "GET"
+            ]
+        ]
     ],
 
     "services" => [
         "events" => [
+            "mautic.altcha.event_listener.form_subscriber" => [
+                "class" => AltchaFormSubscriber::class,
+
+                "arguments" => [
+                    "event_dispatcher",
+                    "mautic.altcha.service.altcha_client",
+                    "mautic.lead.model.lead",
+                    "mautic.helper.integration"
+                ]
+            ],
+
             "mautic.hcaptcha.event_listener.form_subscriber" => [
                 "class" => HcaptchaFormSubscriber::class,
 
@@ -114,7 +138,24 @@ return [
 
         ],
 
+        "controllers" => [
+            "mautic.altcha.controller.api" => [
+                "class" => AltchaApiController::class,
+                "arguments" => [
+                    "mautic.altcha.service.altcha_client"
+                ]
+            ]
+        ],
+
         "others" => [
+            "mautic.altcha.service.altcha_client" => [
+                "class" => AltchaClient::class,
+
+                "arguments" => [
+                    "mautic.helper.integration"
+                ]
+            ],
+
             "mautic.hcaptcha.service.hcaptcha_client" => [
                 "class" => HcaptchaClient::class,
 
@@ -141,6 +182,11 @@ return [
         ],
 
         "integrations" => [
+            "mautic.integration.altcha" => [
+                "class"     => AltchaIntegration::class,
+                "arguments" => $defaultIntegrationArguments
+            ],
+
             "mautic.integration.hcaptcha" => [
                 "class"     => HcaptchaIntegration::class,
                 "arguments" => $defaultIntegrationArguments

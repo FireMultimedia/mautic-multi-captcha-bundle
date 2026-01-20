@@ -13,4 +13,8 @@ return static function(ContainerConfigurator $configurator): void {
 
     $services->load("MauticPlugin\\MauticMultiCaptchaBundle\\", "../")
              ->exclude(sprintf("../{%s}", implode(",", MauticCoreExtension::DEFAULT_EXCLUDES)));
+
+    // Explicitly register Twig Extension
+    $services->set('MauticPlugin\MauticMultiCaptchaBundle\Twig\AltchaExtension')
+             ->tag('twig.extension');
 };

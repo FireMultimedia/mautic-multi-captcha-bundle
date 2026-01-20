@@ -1,0 +1,188 @@
+stages:
+  - test
+  - package
+  - deploy-sandbox
+  - deploy-live
+
+variables:
+  COMPOSER_CACHE_DIR: "$CI_PROJECT_DIR/.composer-cache"
+
+cache:
+  paths:
+    - .composer-cache/
+    - vendor/
+
+# Test job - runs PHPUnit tests
+test:
+  stage: test
+  image: php:8.1
+  tags:
+    - docker
+  before_script:
+    # Install system dependencies
+    - apt-get update -yqq
+    - apt-get install -yqq git unzip libzip-dev libpng-dev libjpeg-dev libfreetype6-dev
+    
+    # Install required PHP extensions (skip imap as it's not needed for our tests)
+    - docker-php-ext-configure gd --with-freetype --with-jpeg
+    - docker-php-ext-install -j$(nproc) bcmath gd sockets zip
+    
+    # Install Composer
+    - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+    
+    # Install dependencies (ignore platform requirements for extensions not needed in tests)
+    - composer install --no-interaction --prefer-dist --optimize-autoloader --ignore-platform-req=ext-imap
+  script:
+    - vendor/bin/phpunit --testdox --colors=never
+  artifacts:
+    when: always
+    expire_in: 1 week
+
+# Package job - creates ZIP and uploads to GitLab Package Registry
+package:
+  stage: package
+  image: alpine:latest
+  tags:
+    - docker
+  needs:
+    - test
+  before_script:
+    - apk add --no-cache zip curl
+  script:
+    # Create package directory
+    - mkdir -p package/MauticMultiCaptchaBundle
+    
+    # Copy production files only
+    - cp -r Assets package/MauticMultiCaptchaBundle/
+    - cp -r Config package/MauticMultiCaptchaBundle/
+    - cp -r Controller package/MauticMultiCaptchaBundle/
+    - cp -r DependencyInjection package/MauticMultiCaptchaBundle/
+    - cp -r EventListener package/MauticMultiCaptchaBundle/
+    - cp -r Form package/MauticMultiCaptchaBundle/
+    - cp -r Integration package/MauticMultiCaptchaBundle/
+    - cp -r Resources package/MauticMultiCaptchaBundle/
+    - cp -r Service package/MauticMultiCaptchaBundle/
+    - cp -r Translations package/MauticMultiCaptchaBundle/
+    - cp -r Twig package/MauticMultiCaptchaBundle/
+    - cp *.php package/MauticMultiCaptchaBundle/ 2>/dev/null || true
+    - cp composer.json package/MauticMultiCaptchaBundle/
+    - cp LICENSE package/MauticMultiCaptchaBundle/
+    - cp README.md package/MauticMultiCaptchaBundle/
+    
+    # Create version-tagged ZIP file
+    - cd package
+    - zip -r MauticMultiCaptchaBundle-${CI_COMMIT_TAG:-${CI_COMMIT_SHORT_SHA}}.zip MauticMultiCaptchaBundle
+    - cd ..
+    
+    # Upload to GitLab Package Registry
+    - |
+      curl --header "JOB-TOKEN: $CI_JOB_TOKEN" \
+           --upload-file package/MauticMultiCaptchaBundle-${CI_COMMIT_TAG:-${CI_COMMIT_SHORT_SHA}}.zip \
+           "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/mautic-multi-captcha-bundle/${CI_COMMIT_TAG:-${CI_COMMIT_SHORT_SHA}}/MauticMultiCaptchaBundle-${CI_COMMIT_TAG:-${CI_COMMIT_SHORT_SHA}}.zip"
+  
+  artifacts:
+    paths:
+      - package/MauticMultiCaptchaBundle-*.zip
+    expire_in: 30 days
+  
+  only:
+    - main
+    - tags
+    - develop
+
+# Deploy to Sandbox - automatic on main branch
+deploy-sandbox:
+  stage: deploy-sandbox
+  image: alpine:latest
+  tags:
+    - docker
+  needs:
+    - package
+  before_script:
+    - apk add --no-cache openssh-client rsync
+    # Setup SSH
+    - eval $(ssh-agent -s)
+    - echo "$DEPLOY_PRIVATE_KEY" | base64 -d | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan -H $DEPLOY_HOST >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+  script:
+    # Extract package for deployment
+    - cd package
+    - unzip -qo MauticMultiCaptchaBundle-*.zip
+        
+    # Deploy to sandbox using rsync
+    - |
+      rsync -avz --delete \
+        --exclude='.git*' \
+        --exclude='Tests/' \
+        --exclude='phpunit.xml' \
+        --exclude='composer.lock' \
+        --exclude='vendor/' \
+        MauticMultiCaptchaBundle/ \
+        $SANDBOX_USER@$DEPLOY_HOST:web/plugins/MauticMultiCaptchaBundle/
+    
+    # Clear Mautic cache on sandbox
+    - |
+      ssh $SANDBOX_USER@$DEPLOY_HOST "cd web && php bin/console cache:clear --env=prod --no-debug"
+  
+  environment:
+    name: sandbox
+    url: https://$SANDBOX_HOST
+  
+  only:
+    - main
+  
+  variables:
+    GIT_STRATEGY: none
+
+# Deploy to Live - manual trigger only
+deploy-live:
+  stage: deploy-live
+  image: alpine:latest
+  tags:
+    - docker
+  needs:
+    - package
+  before_script:
+    - apk add --no-cache openssh-client rsync
+    # Setup SSH
+    - eval $(ssh-agent -s)
+    - echo "$DEPLOY_PRIVATE_KEY" | base64 -d | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan -H $DEPLOY_HOST >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+  script:
+    # Extract package for deployment
+    - cd package
+    - unzip -qo MauticMultiCaptchaBundle-*.zip
+    
+    # Deploy to live using rsync
+    - |
+      rsync -avz --delete \
+        --exclude='.git*' \
+        --exclude='Tests/' \
+        --exclude='phpunit.xml' \
+        --exclude='composer.lock' \
+        --exclude='vendor/' \
+        MauticMultiCaptchaBundle/ \
+        $LIVE_USER@$DEPLOY_HOST:web/plugins/MauticMultiCaptchaBundle/
+    
+    # Clear Mautic cache on live
+    - |
+      ssh $LIVE_USER@$DEPLOY_HOST "cd web && php bin/console cache:clear --env=prod --no-debug"
+  
+  environment:
+    name: production
+    url: https://$LIVE_HOST
+  
+  when: manual
+  
+  only:
+    - main
+    - tags
+  
+  variables:
+    GIT_STRATEGY: none
