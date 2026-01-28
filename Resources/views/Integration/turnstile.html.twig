@@ -162,7 +162,7 @@ Varables
     {% else %}
         <script type="text/javascript">
             function onloadTurnstileCallback() {
-                turnstile.render("#cf_turnstile", {
+                turnstile.render(document.getElementById("cf_turnstile"), {
                     "sitekey": "{{ siteKey }}",
                     "size": "{{ field.properties.size }}",
                     "theme": "{{ field.properties.theme }}",
