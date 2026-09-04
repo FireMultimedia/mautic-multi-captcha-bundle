@@ -146,7 +146,14 @@ Variables
            this URL live each time it loads. #}
         {% set challengeUrl = altcha_challenge(complexity, expireSeconds) %}
 
-        <script async defer src="https://cdn.jsdelivr.net/npm/altcha@latest/dist/altcha.min.js" type="module"></script>
+        <script>
+            (function() {
+                var script = document.createElement("script");
+                script.type = "module";
+                script.src  = "{{ absolute_url(asset('plugins/MauticMultiCaptchaBundle/Assets/js/altcha.min.js')) }}";
+                document.head.appendChild(script);
+            })();
+        </script>
 
         <div {% for attrName, attrValue in containerAttributes %}{{ attrName }}="{% if attrValue is iterable %}{{ attrValue|join(' ') }}{% else %}{{ attrValue }}{% endif %}"{% endfor %}>
             <div style="position: relative; top:25px; padding-bottom:25px">
@@ -155,8 +162,9 @@ Variables
 
             {% if challengeUrl is not null %}
                 <altcha-widget
-                    name="altcha"
-                    challengeurl="{{ challengeUrl|e('html_attr') }}"
+                    name="{{ inputAttributes.name }}"
+                    challengeurl="{{ absolute_url(challengeUrl)|e('html_attr') }}"
+                    refetchonexpire="true"
                     {% if 'off' != autoMode %}auto="{{ autoMode }}"{% endif %}
                     {% if 'standard' != displayMode %}display="{{ displayMode }}"{% endif %}
                     {% if hideFooter %}hidefooter{% endif %}

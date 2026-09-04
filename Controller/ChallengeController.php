@@ -50,6 +50,17 @@ class ChallengeController {
     }
 
     public function __invoke(Request $request): JsonResponse {
+        // Handle CORS preflight - Mautic forms are routinely embedded on
+        // third-party domains, so the widget's fetch() must be allowed cross-origin.
+        if($request->getMethod() === "OPTIONS") {
+            $response = new JsonResponse(null, 204);
+            $response->headers->set("Access-Control-Allow-Origin", "*");
+            $response->headers->set("Access-Control-Allow-Methods", "GET, OPTIONS");
+            $response->headers->set("Access-Control-Allow-Headers", "Content-Type, X-Requested-With, X-Altcha-Spam-Filter, Cache-Control");
+            $response->headers->set("Access-Control-Max-Age", "86400");
+            return $response;
+        }
+
         $complexity    = (string) $request->query->get("complexity", "medium");
         $expireSeconds = (int) $request->query->get("expire", (string) AltchaClient::DEFAULT_EXPIRE_SECONDS);
         $expireSeconds = max(self::MIN_EXPIRE_SECONDS, min(self::MAX_EXPIRE_SECONDS, $expireSeconds));
@@ -67,10 +78,9 @@ class ChallengeController {
         $response->headers->set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");
         $response->headers->set("Pragma", "no-cache");
 
-        // Mautic forms are routinely embedded on third-party domains - the
-        // widget's fetch() call must be allowed cross-origin. The response
-        // contains no sensitive or user-specific data.
         $response->headers->set("Access-Control-Allow-Origin", "*");
+        $response->headers->set("Access-Control-Allow-Methods", "GET, OPTIONS");
+        $response->headers->set("Access-Control-Allow-Headers", "Content-Type, X-Requested-With, X-Altcha-Spam-Filter, Cache-Control");
 
         return $response;
     }

@@ -29,5 +29,18 @@
     },
     "extra": {
         "install-directory-name": "MauticMultiCaptchaBundle"
+    },
+    "autoload": {
+        "psr-4": {
+            "MauticPlugin\\MauticMultiCaptchaBundle\\": "./"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "MauticPlugin\\MauticMultiCaptchaBundle\\Tests\\": "./Tests/"
+        }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.0"
     }
 }
