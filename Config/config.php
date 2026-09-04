@@ -3,14 +3,19 @@
 use MauticPlugin\MauticMultiCaptchaBundle\EventListener\HcaptchaFormSubscriber;
 use MauticPlugin\MauticMultiCaptchaBundle\EventListener\RecaptchaFormSubscriber;
 use MauticPlugin\MauticMultiCaptchaBundle\EventListener\TurnstileFormSubscriber;
+use MauticPlugin\MauticMultiCaptchaBundle\EventListener\AltchaFormSubscriber;
 
 use MauticPlugin\MauticMultiCaptchaBundle\Service\HcaptchaClient;
 use MauticPlugin\MauticMultiCaptchaBundle\Service\RecaptchaClient;
 use MauticPlugin\MauticMultiCaptchaBundle\Service\TurnstileClient;
+use MauticPlugin\MauticMultiCaptchaBundle\Service\AltchaClient;
 
 use MauticPlugin\MauticMultiCaptchaBundle\Integration\HcaptchaIntegration;
 use MauticPlugin\MauticMultiCaptchaBundle\Integration\RecaptchaIntegration;
 use MauticPlugin\MauticMultiCaptchaBundle\Integration\TurnstileIntegration;
+use MauticPlugin\MauticMultiCaptchaBundle\Integration\AltchaIntegration;
+
+use MauticPlugin\MauticMultiCaptchaBundle\Controller\ChallengeController;
 
 use Mautic\CoreBundle\Helper\AppVersion;
 
@@ -67,12 +72,17 @@ switch(true) {
 
 return [
     "name"        => "MultiCAPTCHA",
-    "description" => "Enables Google's reCAPTCHA, hCaptcha, and Cloudflare Turnstile integration for Mautic",
+    "description" => "Enables Google's reCAPTCHA, hCaptcha, Cloudflare Turnstile, and ALTCHA integration for Mautic",
     "version"     => "1.0.8",
     "author"      => "FireMultimedia B.V.",
 
     "routes" => [
-
+        "public" => [
+            "mautic_altcha_challenge" => [
+                "path"       => "/altcha/challenge",
+                "controller" => ChallengeController::class // invokable - see ChallengeController::__invoke()
+            ]
+        ]
     ],
 
     "services" => [
@@ -109,6 +119,18 @@ return [
                     "mautic.lead.model.lead",
                     "mautic.helper.integration"
                 ]
+            ],
+
+            "mautic.altcha.event_listener.form_subscriber" => [
+                "class" => AltchaFormSubscriber::class,
+
+                "arguments" => [
+                    "event_dispatcher",
+                    "mautic.altcha.service.altcha_client",
+                    "mautic.lead.model.lead",
+                    "request_stack",
+                    "mautic.helper.integration"
+                ]
             ]
         ],
 
@@ -139,6 +161,15 @@ return [
                 "arguments" => [
                     "mautic.helper.integration"
                 ]
+            ],
+
+            "mautic.altcha.service.altcha_client" => [
+                "class" => AltchaClient::class,
+
+                "arguments" => [
+                    "mautic.helper.integration",
+                    "router"
+                ]
             ]
         ],
 
@@ -155,6 +186,11 @@ return [
 
             "mautic.integration.turnstile" => [
                 "class"     => TurnstileIntegration::class,
+                "arguments" => $defaultIntegrationArguments
+            ],
+
+            "mautic.integration.altcha" => [
+                "class"     => AltchaIntegration::class,
                 "arguments" => $defaultIntegrationArguments
             ]
         ]
