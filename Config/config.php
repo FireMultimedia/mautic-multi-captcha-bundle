@@ -159,7 +159,6 @@ return [
                     "event_dispatcher",
                     "mautic.altcha.service.altcha_client",
                     "mautic.lead.model.lead",
-                    "request_stack",
                     "mautic.helper.integration"
                 ]
             ],

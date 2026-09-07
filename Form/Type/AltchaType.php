@@ -112,6 +112,23 @@ class AltchaType extends AbstractType {
             "label_attr" => [
                 "class" => "control-label"
             ]
+        ])->add("widgetVersion", ChoiceType::class, [
+            "label"    => "strings.altcha.settings.widget_version",
+            "required" => false,
+            "data"     => $options["data"]["widgetVersion"] ?? "v3",
+
+            "choices" => [
+                "strings.altcha.settings.widget_version.option.v3" => "v3",
+                "strings.altcha.settings.widget_version.option.v2" => "v2"
+            ],
+
+            "label_attr" => [
+                "class" => "control-label"
+            ],
+
+            "attr" => [
+                "tooltip" => "strings.altcha.settings.widget_version.tooltip"
+            ]
         ]);
 
         if(!empty($options["action"]))

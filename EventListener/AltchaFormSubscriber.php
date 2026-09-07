@@ -5,7 +5,6 @@ namespace MauticPlugin\MauticMultiCaptchaBundle\EventListener;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 use Mautic\FormBundle\Event\FormBuilderEvent;
@@ -41,7 +40,6 @@ class AltchaFormSubscriber implements EventSubscriberInterface {
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly AltchaClient             $altchaClient,
         private readonly LeadModel                $leadModel,
-        private readonly RequestStack             $requestStack,
 
         IntegrationHelper $integrationHelper
     ) {
@@ -89,7 +87,7 @@ class AltchaFormSubscriber implements EventSubscriberInterface {
         if(!$this->isConfigured)
             return;
 
-        $payload = (string) $this->requestStack->getCurrentRequest()?->request->get("altcha", "");
+        $payload = (string) ($event->getValue() ?? "");
 
         if($this->altchaClient->verify($payload))
             return;
