@@ -149,6 +149,10 @@ Variables
 
         <script>
             (function() {
+                var link = document.createElement("link");
+                link.rel  = "stylesheet";
+                link.href = "{{ absolute_url(asset('plugins/MauticMultiCaptchaBundle/Assets/css/altcha.css')) }}";
+                document.head.appendChild(link);
                 var script = document.createElement("script");
                 script.type = "module";
                 script.src  = "{{ absolute_url(asset('plugins/MauticMultiCaptchaBundle/Assets/js/altcha.min.js')) }}";
