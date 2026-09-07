@@ -105,7 +105,7 @@ return [
         "public" => [
             "mautic_altcha_challenge" => [
                 "path"       => "/altcha/challenge",
-                "controller" => ChallengeController::class // invokable - see ChallengeController::__invoke()
+                "controller" => "mautic.altcha.controller.challenge"
             ],
 
             "mautic_cap_api_wasm" => [
@@ -184,6 +184,13 @@ return [
             "mautic.cap.controller.asset" => [
                 "class"     => CapAssetController::class,
                 "arguments" => []
+            ],
+
+            "mautic.altcha.controller.challenge" => [
+                "class"     => ChallengeController::class,
+                "arguments" => [
+                    "mautic.altcha.service.altcha_client"
+                ]
             ]
         ],
 
