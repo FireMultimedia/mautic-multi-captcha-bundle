@@ -20,6 +20,7 @@ use MauticPlugin\MauticMultiCaptchaBundle\Integration\CapIntegration;
 
 use MauticPlugin\MauticMultiCaptchaBundle\Controller\ChallengeController;
 use MauticPlugin\MauticMultiCaptchaBundle\Controller\CapAssetController;
+use MauticPlugin\MauticMultiCaptchaBundle\Twig\AltchaExtension;
 
 use Mautic\CoreBundle\Helper\AppVersion;
 
@@ -226,6 +227,14 @@ return [
                 "arguments" => [
                     "mautic.helper.integration"
                 ]
+            ],
+
+            "mautic.altcha.twig.extension" => [
+                "class"     => AltchaExtension::class,
+                "arguments" => [
+                    "mautic.altcha.service.altcha_client"
+                ],
+                "tag" => "twig.extension"
             ]
         ],
 
