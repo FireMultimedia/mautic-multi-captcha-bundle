@@ -4,18 +4,22 @@ use MauticPlugin\MauticMultiCaptchaBundle\EventListener\HcaptchaFormSubscriber;
 use MauticPlugin\MauticMultiCaptchaBundle\EventListener\RecaptchaFormSubscriber;
 use MauticPlugin\MauticMultiCaptchaBundle\EventListener\TurnstileFormSubscriber;
 use MauticPlugin\MauticMultiCaptchaBundle\EventListener\AltchaFormSubscriber;
+use MauticPlugin\MauticMultiCaptchaBundle\EventListener\CapFormSubscriber;
 
 use MauticPlugin\MauticMultiCaptchaBundle\Service\HcaptchaClient;
 use MauticPlugin\MauticMultiCaptchaBundle\Service\RecaptchaClient;
 use MauticPlugin\MauticMultiCaptchaBundle\Service\TurnstileClient;
 use MauticPlugin\MauticMultiCaptchaBundle\Service\AltchaClient;
+use MauticPlugin\MauticMultiCaptchaBundle\Service\CapClient;
 
 use MauticPlugin\MauticMultiCaptchaBundle\Integration\HcaptchaIntegration;
 use MauticPlugin\MauticMultiCaptchaBundle\Integration\RecaptchaIntegration;
 use MauticPlugin\MauticMultiCaptchaBundle\Integration\TurnstileIntegration;
 use MauticPlugin\MauticMultiCaptchaBundle\Integration\AltchaIntegration;
+use MauticPlugin\MauticMultiCaptchaBundle\Integration\CapIntegration;
 
 use MauticPlugin\MauticMultiCaptchaBundle\Controller\ChallengeController;
+use MauticPlugin\MauticMultiCaptchaBundle\Controller\CapAssetController;
 
 use Mautic\CoreBundle\Helper\AppVersion;
 
@@ -72,7 +76,7 @@ switch(true) {
 
 return [
     "name"        => "MultiCAPTCHA",
-    "description" => "Enables Google's reCAPTCHA, hCaptcha, Cloudflare Turnstile, and ALTCHA integration for Mautic",
+    "description" => "Enables Google's reCAPTCHA, hCaptcha, Cloudflare Turnstile, ALTCHA, and Cap integration for Mautic",
     "version"     => "1.0.8",
     "author"      => "FireMultimedia B.V.",
 
@@ -81,6 +85,12 @@ return [
             "mautic_altcha_challenge" => [
                 "path"       => "/altcha/challenge",
                 "controller" => ChallengeController::class // invokable - see ChallengeController::__invoke()
+            ],
+
+            "mautic_cap_api_wasm" => [
+                "path"       => "/cap/api/wasm",
+                "controller" => "mautic.cap.controller.asset:wasmAction",
+                "method"     => "GET"
             ]
         ]
     ],
@@ -131,11 +141,29 @@ return [
                     "request_stack",
                     "mautic.helper.integration"
                 ]
+            ],
+
+            "mautic.cap.event_listener.form_subscriber" => [
+                "class" => CapFormSubscriber::class,
+
+                "arguments" => [
+                    "event_dispatcher",
+                    "mautic.cap.service.cap_client",
+                    "mautic.lead.model.lead",
+                    "mautic.helper.integration"
+                ]
             ]
         ],
 
         "models" => [
 
+        ],
+
+        "controllers" => [
+            "mautic.cap.controller.asset" => [
+                "class"     => CapAssetController::class,
+                "arguments" => []
+            ]
         ],
 
         "others" => [
@@ -170,6 +198,14 @@ return [
                     "mautic.helper.integration",
                     "router"
                 ]
+            ],
+
+            "mautic.cap.service.cap_client" => [
+                "class" => CapClient::class,
+
+                "arguments" => [
+                    "mautic.helper.integration"
+                ]
             ]
         ],
 
@@ -191,6 +227,11 @@ return [
 
             "mautic.integration.altcha" => [
                 "class"     => AltchaIntegration::class,
+                "arguments" => $defaultIntegrationArguments
+            ],
+
+            "mautic.integration.cap" => [
+                "class"     => CapIntegration::class,
                 "arguments" => $defaultIntegrationArguments
             ]
         ]
