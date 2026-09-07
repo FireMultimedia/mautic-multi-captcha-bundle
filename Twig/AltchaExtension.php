@@ -29,8 +29,13 @@ class AltchaExtension extends AbstractExtension {
     /** {@inheritDoc} */
     public function getFunctions(): array {
         return [
-            new TwigFunction("altcha_challenge", [$this, "createChallenge"])
+            new TwigFunction("altcha_challenge", [$this, "createChallenge"]),
+            new TwigFunction("altcha_is_sentinel", [$this, "isSentinel"])
         ];
+    }
+
+    public function isSentinel(): bool {
+        return $this->altchaClient->usesSentinel();
     }
 
     /**

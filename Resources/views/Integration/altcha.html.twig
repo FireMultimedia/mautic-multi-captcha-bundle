@@ -145,6 +145,7 @@ Variables
            every visitor until the form is next saved. The widget fetches
            this URL live each time it loads. #}
         {% set challengeUrl = altcha_challenge(complexity, expireSeconds) %}
+        {% set isSentinel = altcha_is_sentinel() %}
 
         <script>
             (function() {
@@ -165,6 +166,7 @@ Variables
                     name="{{ inputAttributes.name }}"
                     challengeurl="{{ absolute_url(challengeUrl)|e('html_attr') }}"
                     refetchonexpire="true"
+                    {% if isSentinel %}spamfilter{% endif %}
                     {% if 'off' != autoMode %}auto="{{ autoMode }}"{% endif %}
                     {% if 'standard' != displayMode %}display="{{ displayMode }}"{% endif %}
                     {% if hideFooter %}hidefooter{% endif %}
