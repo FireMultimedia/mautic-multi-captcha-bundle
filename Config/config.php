@@ -38,6 +38,7 @@ switch(true) {
             "router",
             "translator",
             "monolog.logger.mautic",
+            "mautic.helper.encryption",
             "mautic.lead.model.lead",
             "mautic.lead.model.company",
             "mautic.helper.paths",
