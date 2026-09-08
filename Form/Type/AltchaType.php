@@ -9,6 +9,7 @@ use Mautic\CoreBundle\Form\Type\YesNoButtonGroupType;
 
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 
 use MauticPlugin\MauticMultiCaptchaBundle\Integration\AltchaIntegration;
 
@@ -61,12 +62,11 @@ class AltchaType extends AbstractType {
         ])->add("auto", ChoiceType::class, [
             "label"    => "strings.altcha.settings.auto",
             "required" => false,
-            "data"     => $options["data"]["auto"] ?? "onsubmit",
+            "data"     => $options["data"]["auto"] ?? "onload",
 
             "choices" => [
-                "strings.altcha.settings.auto.option.onload"   => "onload",
-                "strings.altcha.settings.auto.option.onsubmit" => "onsubmit",
-                "strings.altcha.settings.auto.option.off"      => "off"
+                "strings.altcha.settings.auto.option.onload" => "onload",
+                "strings.altcha.settings.auto.option.off"    => "off"
             ],
 
             "label_attr" => [
@@ -112,22 +112,19 @@ class AltchaType extends AbstractType {
             "label_attr" => [
                 "class" => "control-label"
             ]
-        ])->add("widgetVersion", ChoiceType::class, [
-            "label"    => "strings.altcha.settings.widget_version",
+        ])->add("language", TextType::class, [
+            "label"    => "strings.altcha.settings.language",
             "required" => false,
-            "data"     => $options["data"]["widgetVersion"] ?? "v3",
-
-            "choices" => [
-                "strings.altcha.settings.widget_version.option.v3" => "v3",
-                "strings.altcha.settings.widget_version.option.v2" => "v2"
-            ],
+            "data"     => $options["data"]["language"] ?? "",
 
             "label_attr" => [
                 "class" => "control-label"
             ],
 
             "attr" => [
-                "tooltip" => "strings.altcha.settings.widget_version.tooltip"
+                "class"       => "form-control",
+                "placeholder" => "strings.altcha.settings.language.placeholder",
+                "tooltip"     => "strings.altcha.settings.language.tooltip"
             ]
         ]);
 
