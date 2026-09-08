@@ -16,14 +16,31 @@
         "integration",
         "hCaptcha",
         "Cloudflare Turnstile",
-        "Google reCAPTCHA"
+        "Google reCAPTCHA",
+        "ALTCHA",
+        "proof-of-work",
+        "spam-protection"
     ],
     "require": {
         "php": "^8.1|^8.2",
         "ext-json": "*",
-        "mautic/core-lib": "^5.0|^6.0|^7.0"
+        "mautic/core-lib": "^5.0|^6.0|^7.0",
+        "altcha-org/altcha": "^2.0"
     },
     "extra": {
         "install-directory-name": "MauticMultiCaptchaBundle"
+    },
+    "autoload": {
+        "psr-4": {
+            "MauticPlugin\\MauticMultiCaptchaBundle\\": "./"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "MauticPlugin\\MauticMultiCaptchaBundle\\Tests\\": "./Tests/"
+        }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.0"
     }
 }
