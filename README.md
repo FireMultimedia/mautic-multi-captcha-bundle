@@ -76,3 +76,17 @@ Add the "Cloudflare Turnstile" field to the form and save changes.
 | Explicit consent mode:                                                                             | Implicit consent mode:                                                                                                                        |
 |----------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------|
 | ![Cloudflare Turnstile](.github/doc/turnstile_preview.png "Mautic Form with Cloudflare Turnstile") | ![Cloudflare Turnstile implied consent](.github/doc/turnstile_preview_implicit.png "Mautic Form with Cloudflare Turnstile (implied consent)") |
+
+## Integration service regression test
+
+With this plugin installed in a Mautic checkout, run the following as the Mautic
+filesystem user (use the project root containing `vendor/autoload.php`):
+
+```sh
+MAUTIC_ROOT=/path/to/mautic php -d memory_limit=1G plugins/MauticMultiCaptchaBundle/Tests/integration-services.php
+```
+
+For a Composer installation, the script is under `docroot/plugins/` instead.
+The test compiles a fresh container in a temporary cache directory, instantiates
+all three CAPTCHA integrations, and removes its cache afterward. It does not
+change integration settings or validate challenges with external providers.
