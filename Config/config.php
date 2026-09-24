@@ -59,7 +59,7 @@ switch(true) {
             "router",
             "translator",
             "monolog.logger.mautic",
-            "mautic.helper.encryption",
+            "mautic.multicaptcha.helper.encryption",
             "mautic.lead.model.lead",
             "mautic.lead.model.company",
             "mautic.helper.paths",
@@ -80,7 +80,7 @@ switch(true) {
             "router",
             "translator",
             "monolog.logger.mautic",
-            "mautic.helper.encryption",
+            "mautic.multicaptcha.helper.encryption",
             "mautic.lead.model.lead",
             "mautic.lead.model.company",
             "mautic.helper.paths",
@@ -98,7 +98,7 @@ switch(true) {
 return [
     "name"        => "MultiCAPTCHA",
     "description" => "Enables Google's reCAPTCHA, hCaptcha, Cloudflare Turnstile, ALTCHA, and Cap integration for Mautic",
-    "version"     => "1.0.8",
+    "version"     => "1.0.9",
     "author"      => "FireMultimedia B.V.",
 
     "routes" => [
