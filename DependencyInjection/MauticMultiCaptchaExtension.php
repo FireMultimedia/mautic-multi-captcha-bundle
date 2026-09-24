@@ -2,6 +2,7 @@
 
 namespace MauticPlugin\MauticMultiCaptchaBundle\DependencyInjection;
 
+use Mautic\CoreBundle\Helper\EncryptionHelper;
 use Symfony\Component\DependencyInjection\Extension\Extension;
 
 use \Exception;
@@ -29,9 +30,15 @@ class MauticMultiCaptchaExtension extends Extension {
      * @return void
      */
     public function load(array $configs, ContainerBuilder $container): void {
-        $loader = new PhpFileLoader($container, new FileLocator(__DIR__ . "/../Config"));
-
-        $loader->load("services.php");
+        // In Mautic 7 the mautic.helper.encryption alias was removed; the service
+        // is now only registered under its FQCN. Re-create the alias so the legacy
+        // plugin config.php service definitions keep working across all versions.
+        if (!$container->has('mautic.helper.encryption')
+            && $container->has(\Mautic\CoreBundle\Helper\EncryptionHelper::class)
+        ) {
+            $container->setAlias('mautic.helper.encryption', \Mautic\CoreBundle\Helper\EncryptionHelper::class)
+                ->setPublic(true);
+        }
     }
 
 }

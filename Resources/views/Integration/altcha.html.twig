@@ -1,0 +1,199 @@
+{#
+Variables
+  - field
+  - formName (optional, string)
+  - fieldPage
+  - contactFields
+  - companyFields
+  - inBuilder
+  - fields
+  - inForm (optional, bool)
+  - required (optional, bool)
+#}
+{% set defaultInputClass = 'text' %}
+{% set containerType = 'div-wrapper' %}
+
+{# start: field_helper #}
+{% set defaultInputFormClass = defaultInputFormClass|default('') %}
+{% set defaultLabelClass = defaultLabelClass|default('label') %}
+{% set formName = formName|default('') %}
+{% set defaultInputClass = 'mauticform-' ~ defaultInputClass %}
+{% set defaultLabelClass = 'mauticform-' ~ defaultLabelClass %}
+{% set containerClass = containerClass|default(containerType) %}
+{% set order = field.order|default(0) %}
+{% set validationMessage = '' %}
+
+{% set inputAttributes = htmlAttributesStringToArray(field.inputAttributes|default('')) %}
+{% set labelAttributes = htmlAttributesStringToArray(field.labelAttributes|default('')) %}
+{% set containerAttributes = htmlAttributesStringToArray(field.containerAttributes|default('')) %}
+
+{% if ignoreName is not defined or (ignoreName is defined and ignoreName is empty) %}
+    {% set inputName = 'mauticform[' ~ field.alias ~ ']' %}
+    {% if field.properties.multiple is defined %}
+        {% set inputName = inputName ~ '[]' %}
+    {% endif %}
+    {% set inputAttributes = inputAttributes|merge({
+        'name': inputName,
+    }) %}
+{% endif %}
+
+{% if field.type not in ['checkboxgrp', 'radiogrp', 'textarea'] %}
+    {% set inputAttributes = inputAttributes|merge({
+        'value': field.defaultValue|default(''),
+    }) %}
+{% endif %}
+
+{% if ignoreId is not defined or (ignoreId is defined and ignoreId is empty) %}
+    {% set inputAttributes = inputAttributes|merge({
+        'id': 'mauticform_input' ~ formName ~ '_' ~ field.alias,
+    }) %}
+    {% set labelAttributes = labelAttributes|merge({
+        'id': 'mauticform_label' ~ formName ~ '_' ~ field.alias,
+        'for': 'mauticform_input' ~ formName ~ '_' ~ field.alias,
+    }) %}
+{% endif %}
+
+{# Label and input #}
+{% if inForm is defined and (true == inForm or inForm is not empty) %}
+    {% set labelAttributes = labelAttributes|merge({
+        'class': labelAttributes.class|default([])|merge([defaultLabelClass]),
+    }) %}
+    {% set inputAttributes = inputAttributes|merge({
+        'disabled': 'disabled',
+        'class': inputAttributes.class|default([])|merge([defaultInputClass, defaultInputFormClass]),
+    }) %}
+{% else %}
+    {% set labelAttributes = labelAttributes|merge({
+        'class': labelAttributes.class|default([])|merge([defaultLabelClass]),
+    }) %}
+    {% set inputAttributes = inputAttributes|merge({
+        'class': inputAttributes.class|default([])|merge([defaultInputClass]),
+    }) %}
+{% endif %}
+
+{# Container #}
+{% set containerAttributes = containerAttributes|merge({
+    'id': 'mauticform' ~ formName|default('') ~ '_' ~ id,
+    'class': containerAttributes.class|default([])|merge([
+        'mauticform-row',
+        'mauticform-' ~ containerClass,
+        'mauticform-field-' ~ order,
+    ]),
+}) %}
+{% if field.parent and fields[field.parent] is defined %}
+    {% set values = field.conditions.values|join('|') %}
+
+    {% if field.conditions.any is not empty and 'notIn' != field.conditions.expr %}
+        {% set values = '*' %}
+    {% endif %}
+
+    {% set containerAttributes = containerAttributes|merge({
+        'data-mautic-form-show-on': fields[field.parent].alias ~ ':' ~ values,
+        'data-mautic-form-expr': field.conditions.expr,
+        'class': containerAttributes.class|merge([
+            'mauticform-field-hidden',
+        ]),
+    }) %}
+{% endif %}
+
+{# Field is required #}
+{% if field.isRequired is defined and field.isRequired %}
+    {% set required = true %}
+    {% set validationMessage = field.validationMessage %}
+    {% if validationMessage is empty %}
+        {% set validationMessage = 'mautic.form.field.generic.required'|trans([], 'validators') %}
+    {% endif %}
+    {% set containerAttributes = containerAttributes|merge({
+        'class': containerAttributes.class|default([])|merge([
+            'mauticform-required',
+        ]),
+        'data-validate': field.alias,
+        'data-validation-type': field.type,
+    }) %}
+{% elseif required is defined and true == required %}
+    {% set containerAttributes = containerAttributes|merge({
+        'class': containerAttributes.class|default([])|merge([
+            'mauticform-required',
+        ]),
+    }) %}
+{% endif %}
+{# end: field_helper #}
+
+{% set formName = formName|replace({'_': ''})|default('mauticform') %}
+
+{% block altcha %}
+    {% set complexity     = field.properties.complexity|default('medium') %}
+    {% set expireSeconds  = field.properties.expire|default(600) %}
+    {% set autoMode       = field.properties.auto|default('onload') %}
+    {% set displayMode    = field.properties.display|default('standard') %}
+    {% set hideFooter     = field.properties.hideFooter|default(false) %}
+    {% set hideLogo       = field.properties.hideLogo|default(false) %}
+    {% set widgetVersion  = field.properties.widgetVersion|default('v3') %}
+    {% set language       = field.properties.language|default('') %}
+
+    {# Languages that have a companion i18n JS file under Assets/js/i18n/.
+       Loading the file registers the translations in globalThis.$altcha.i18n
+       so the widget can find them for the configured language. #}
+    {% set i18nLanguages = ['fi', 'sv', 'de'] %}
+
+    {% if field.showLabel %}
+        <label {% for attrName, attrValue in labelAttributes %}{{ attrName }}="{% if attrValue is iterable %}{{ attrValue|join(' ') }}{% else %}{{ attrValue }}{% endif %}"{% endfor %}>
+            {{ field.label }}
+        </label>
+    {% endif %}
+
+    {% if inForm is defined and (true == inForm or inForm is not empty) %}
+        <div style="padding: 10px; background: #f5f5f5; border: 1px dashed #ccc; text-align: center;">
+            ALTCHA widget ({{ complexity }} complexity, {{ widgetVersion }})
+        </div>
+    {% else %}
+        {# Always a URL - never inline JSON. Mautic caches form HTML in
+           forms.cached_html, so a baked-in challenge would go stale for
+           every visitor until the form is next saved. The widget fetches
+           this URL live each time it loads. #}
+        {% set challengeUrl = altcha_challenge(complexity, expireSeconds) %}
+
+        <script>
+            (function() {
+                var link = document.createElement("link");
+                link.rel  = "stylesheet";
+                link.href = "{{ absolute_url(asset('plugins/MauticMultiCaptchaBundle/Assets/css/altcha.css')) }}";
+                document.head.appendChild(link);
+                {% if language is not empty and language in i18nLanguages %}
+                var i18n = document.createElement("script");
+                i18n.src = "{{ absolute_url(asset('plugins/MauticMultiCaptchaBundle/Assets/js/i18n/' ~ language ~ '.js')) }}";
+                document.head.appendChild(i18n);
+                {% endif %}
+                var script = document.createElement("script");
+                script.src  = "{{ absolute_url(asset('plugins/MauticMultiCaptchaBundle/Assets/js/altcha.min.js')) }}";
+                document.head.appendChild(script);
+            })();
+        </script>
+
+        <div {% for attrName, attrValue in containerAttributes %}{{ attrName }}="{% if attrValue is iterable %}{{ attrValue|join(' ') }}{% else %}{{ attrValue }}{% endif %}"{% endfor %}>
+            <div style="position: relative; top:25px; padding-bottom:25px">
+                <span class="mauticform-errormsg" style="display: none;"></span>
+            </div>
+
+            {% if challengeUrl is not null %}
+                {# v3 widget (dist/main/altcha.min.js): uses `challenge` attribute.
+                   `challengeurl` (v2) is not observed by the v3 custom element. #}
+                {% set widgetConfig = {} %}
+                {% if hideFooter %}{% set widgetConfig = widgetConfig|merge({'hideFooter': true}) %}{% endif %}
+                {% if hideLogo %}{% set widgetConfig = widgetConfig|merge({'hideLogo': true}) %}{% endif %}
+                <altcha-widget
+                    name="{{ inputAttributes.name }}"
+                    challenge="{{ absolute_url(challengeUrl)|e('html_attr') }}"
+                    {% if 'off' != autoMode %}auto="{{ autoMode }}"{% endif %}
+                    {% if 'standard' != displayMode %}display="{{ displayMode }}"{% endif %}
+                    {% if language is not empty %}language="{{ language|e('html_attr') }}"{% endif %}
+                    {% if widgetConfig is not empty %}configuration="{{ widgetConfig|json_encode|e('html_attr') }}"{% endif %}
+                ></altcha-widget>
+            {% else %}
+                <div style="padding: 10px; background: #fdecea; border: 1px solid #f5c2c0; color: #611a15;">
+                    ALTCHA is not configured yet. Under Plugins &rarr; ALTCHA, add either an HMAC secret (self-hosted) or your Sentinel domain + API key + API secret.
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
+{% endblock %}
